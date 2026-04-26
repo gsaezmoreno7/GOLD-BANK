@@ -54,52 +54,17 @@ const Auth = ({ mode = 'login' }) => {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md glass-card p-10 relative z-10"
       >
-        <Link to="/" className="flex items-center gap-2 text-dim hover:text-gold-primary transition-colors mb-8 text-sm group">
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> VOLVER
-        </Link>
+        {/* Adorno decorativo de luz */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-gold-primary opacity-10 blur-3xl rounded-full"></div>
 
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <Shield className="text-black" size={32} />
-          </div>
-          <h2 className="text-3xl font-bold mb-2 uppercase tracking-tight">
-            {mode === 'login' ? 'Bienvenido a Gold' : 'Únete al Prestigio'}
+          <Link to="/" className="inline-flex items-center gap-2 text-gold-primary mb-6 hover:opacity-80 transition-opacity">
+            <ArrowLeft size={16} />
+            <span className="text-xs font-bold uppercase tracking-widest">Regresar</span>
+          </Link>
+          <h2 className="text-4xl font-bold gold-text mb-2">
+            {isLogin ? 'Bienvenido' : 'Nueva Cuenta'}
           </h2>
-          <p className="text-dim text-sm">
-            {mode === 'login' ? 'Ingrese sus credenciales de acceso seguro' : 'Complete sus datos para la membresía Gold'}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {mode === 'register' && (
-            <>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-dim uppercase tracking-widest ml-1">Nombre Completo</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
-                  <input 
-                    name="full_name"
-                    type="text" 
-                    required
-                    onChange={handleChange}
-                    className="w-full bg-white bg-opacity-5 border border-white border-opacity-10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-gold-primary transition-all text-sm"
-                    placeholder="Juan Pérez"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-dim uppercase tracking-widest ml-1">RUT</label>
-                <div className="relative">
-                  <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
-                  <input 
-                    name="rut"
-                    type="text" 
-                    required
-                    onChange={handleChange}
-                    className="w-full bg-white bg-opacity-5 border border-white border-opacity-10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-gold-primary transition-all text-sm"
-                    placeholder="12.345.678-9"
-                  />
-                </div>
               </div>
             </>
           )}

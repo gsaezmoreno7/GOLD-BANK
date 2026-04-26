@@ -1,22 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
 
 :root {
   --gold-primary: #D4AF37;
   --gold-light: #F2D388;
   --gold-dark: #9A7D46;
-  --bg-dark: #050505;
-  --bg-card: #0A0A0C;
+  --gold-text: #E5C76B;
+  --bg-dark: #030303;
+  --bg-card: rgba(20, 20, 22, 0.7);
   --text-main: #FFFFFF;
-  --text-dim: #A0A0A0;
-  --accent-blue: #1E3A8A;
-  --glass-bg: rgba(10, 10, 12, 0.8);
-  --glass-border: rgba(212, 175, 55, 0.2);
+  --text-dim: #8E8E93;
+  --glass-bg: rgba(15, 15, 18, 0.75);
+  --glass-border: rgba(212, 175, 55, 0.25);
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  letter-spacing: 0.02em; /* Separación de letras global */
 }
 
 body {
@@ -24,36 +26,43 @@ body {
   color: var(--text-main);
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* --- UTILIDADES DE LAYOUT (ELIMINANDO EL ERROR) --- */
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.01em;
+}
+
+/* --- UTILIDADES DE DISEÑO PROFESIONAL --- */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
 .justify-center { justify-content: center; }
-.justify-between { justify-content: justify-between; } /* Error aquí, corregido abajo */
 .justify-between { justify-content: space-between; }
 .gap-2 { gap: 0.5rem; }
-.gap-3 { gap: 0.75rem; }
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
 .gap-8 { gap: 2rem; }
-.gap-10 { gap: 2.5rem; }
+.gap-12 { gap: 3rem; }
+
 .w-full { width: 100%; }
 .max-w-7xl { max-width: 80rem; margin: 0 auto; }
-.max-w-md { max-width: 28rem; }
-.p-6 { padding: 1.5rem; }
+.max-w-md { max-width: 32rem; } /* Más ancho para que no se apriete */
+
 .p-8 { padding: 2rem; }
-.p-10 { padding: 2.5rem; }
-.px-8 { padding-left: 2rem; padding-right: 2rem; }
-.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-.pt-40 { padding-top: 10rem; }
-.mb-8 { margin-bottom: 2rem; }
+.p-12 { padding: 3rem; }
+.px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
+.py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-10 { margin-bottom: 2.5rem; }
+
 .text-center { text-align: center; }
 .relative { position: relative; }
 .absolute { position: absolute; }
 .fixed { position: fixed; }
 .z-50 { z-index: 50; }
+
 .grid { display: grid; }
 .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
 @media (min-width: 768px) {
@@ -61,60 +70,85 @@ body {
   .md\:flex { display: flex; }
 }
 
-/* --- ESTILOS PREMIUM --- */
-.gold-gradient {
-  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+/* --- COMPONENTES DE LUJO --- */
+.gold-text {
+  background: linear-gradient(to right, var(--gold-light), var(--gold-primary), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
 }
 
-.bg-gold-gradient {
-  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-  color: black;
-}
-
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
   border: 1px solid var(--glass-border);
-  border-radius: 24px;
+  border-radius: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.input-premium {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem 1.2rem 3.5rem;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.input-premium:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
 }
 
 .btn-premium {
-  padding: 1rem 2rem;
+  padding: 1.2rem 2.5rem;
   border-radius: 50px;
-  text-decoration: none;
   font-weight: 700;
-  transition: all 0.3s ease;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: var(--transition);
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
   border: none;
-  cursor: pointer;
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-  color: black;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
+  color: #000;
+  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
 }
 
 .btn-gold:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(212, 175, 55, 0.5);
 }
 
-.text-dim { color: var(--text-dim); }
-.tracking-tighter { letter-spacing: -0.05em; }
-.tracking-widest { letter-spacing: 0.1em; }
+.text-dim { color: var(--text-dim); line-height: 1.6; }
 
-/* Animaciones */
-@keyframes pulse-gold {
-  0% { opacity: 0.1; }
-  50% { opacity: 0.2; }
-  100% { opacity: 0.1; }
+/* Efecto de Luces de Fondo */
+.bg-glow {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(30, 58, 138, 0.05) 0%, transparent 40%);
 }
 
-.animate-pulse {
-  animation: pulse-gold 4s infinite ease-in-out;
+.tracking-widest { letter-spacing: 0.15em; }
+
+/* Animación de entrada suave */
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

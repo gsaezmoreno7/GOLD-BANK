@@ -86,37 +86,3 @@ USING (account_id IN (SELECT id FROM accounts WHERE user_id = auth.uid()));
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
-
--- 8. AUTOMATIZACIÓN: Sincronización con Supabase Auth
--- Esta función se ejecuta cada vez que un usuario se registra en la plataforma
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Crear el perfil en nuestra tabla pública usando la metadata del registro
-  INSERT INTO public.profiles (id, full_name, email, rut, role)
-  VALUES (
-    NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Usuario Gold'), 
-    NEW.email, 
-    COALESCE(NEW.raw_user_meta_data->>'rut', 'PENDIENTE-' || floor(random() * 1000000)::text),
-    'user'
-  );
-
-  -- Crear automáticamente la primera cuenta bancaria del usuario
-  INSERT INTO public.accounts (user_id, account_number, balance, account_type)
-  VALUES (
-    NEW.id, 
-    'GB-' || floor(random() * 900000 + 100000)::text, 
-    100000, -- Bono de apertura: $100.000 CLP
-    'checking'
-  );
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger que vincula el Auth de Supabase con nuestra función
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

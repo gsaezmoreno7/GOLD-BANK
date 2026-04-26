@@ -116,7 +116,7 @@ const Auth = ({ mode = 'login' }) => {
               <input 
                 name="email"
                 type="email" 
-                placeholder="usuario@goldbank.cl"
+                placeholder="usuario@email.com"
                 className="input-premium"
                 onChange={handleChange}
                 required

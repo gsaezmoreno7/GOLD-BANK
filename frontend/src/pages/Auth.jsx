@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Mail, Lock, User, IdCard, ArrowLeft, Loader2 } from 'lucide-react';
+import { Shield, Mail, Lock, User, IdCard, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -25,8 +25,9 @@ const Auth = ({ mode = 'login' }) => {
     setError('');
     
     try {
+      const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const response = await axios.post(`http://localhost:3000${endpoint}`, formData);
+      const response = await axios.post(`${apiURL}${endpoint}`, formData);
       
       if (mode === 'login') {
         localStorage.setItem('token', response.data.data.session.access_token);
@@ -44,88 +45,126 @@ const Auth = ({ mode = 'login' }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-black relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-[#030303] relative overflow-hidden">
       {/* Background Orbs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gold-primary opacity-10 blur-[150px]" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent-blue opacity-10 blur-[150px]" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gold-primary opacity-5 blur-[150px]" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#1E3A8A] opacity-5 blur-[150px]" />
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md glass-card p-10 relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md glass-card p-12 relative z-10"
       >
-        {/* Adorno decorativo de luz */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-gold-primary opacity-10 blur-3xl rounded-full"></div>
-
         <div className="text-center mb-10">
-          <Link to="/" className="inline-flex items-center gap-2 text-gold-primary mb-6 hover:opacity-80 transition-opacity">
+          <Link to="/" className="inline-flex items-center gap-2 text-gold-primary mb-8 hover:opacity-80 transition-opacity">
             <ArrowLeft size={16} />
-            <span className="text-xs font-bold uppercase tracking-widest">Regresar</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Regresar al Inicio</span>
           </Link>
-          <h2 className="text-4xl font-bold gold-text mb-2">
-            {isLogin ? 'Bienvenido' : 'Nueva Cuenta'}
+          
+          <div className="w-16 h-16 bg-gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-gold-lg">
+             <Shield className="text-black" size={32} />
+          </div>
+
+          <h2 className="text-4xl font-black gold-text mb-2">
+            {mode === 'login' ? 'Bienvenido' : 'Nueva Cuenta'}
           </h2>
+          <p className="text-dim text-sm font-medium tracking-wide">
+            {mode === 'login' ? 'Acceda a su banca privada exclusiva' : 'Únase al círculo de privilegio Gold'}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          {mode === 'register' && (
+            <>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-black text-gold-primary uppercase tracking-[0.2em] ml-1">Nombre Completo</label>
+                <div className="relative">
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 text-gold-primary/60" size={20} />
+                  <input 
+                    name="full_name"
+                    type="text" 
+                    placeholder="Ej: Juan Pérez"
+                    className="input-premium"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-black text-gold-primary uppercase tracking-[0.2em] ml-1">RUT</label>
+                <div className="relative">
+                  <IdCard className="absolute left-5 top-1/2 -translate-y-1/2 text-gold-primary/60" size={20} />
+                  <input 
+                    name="rut"
+                    type="text" 
+                    placeholder="12.345.678-9"
+                    className="input-premium"
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
             </>
           )}
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-dim uppercase tracking-widest ml-1">Correo Electrónico</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black text-gold-primary uppercase tracking-[0.2em] ml-1">Correo Electrónico</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
+              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gold-primary/60" size={20} />
               <input 
                 name="email"
                 type="email" 
-                required
-                onChange={handleChange}
-                className="w-full bg-white bg-opacity-5 border border-white border-opacity-10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-gold-primary transition-all text-sm"
                 placeholder="usuario@goldbank.cl"
+                className="input-premium"
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-dim uppercase tracking-widest ml-1">Clave Maestra</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black text-gold-primary uppercase tracking-[0.2em] ml-1">Clave Maestra</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
+              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-gold-primary/60" size={20} />
               <input 
                 name="password"
                 type="password" 
-                required
-                onChange={handleChange}
-                className="w-full bg-white bg-opacity-5 border border-white border-opacity-10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-gold-primary transition-all text-sm"
                 placeholder="••••••••"
+                className="input-premium"
+                onChange={handleChange}
+                required
               />
             </div>
           </div>
 
           {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-20 text-red-500 p-4 rounded-xl text-xs text-center font-bold"
-            >
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-xs text-center font-bold">
               {error}
-            </motion.div>
+            </div>
           )}
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full btn-premium btn-gold py-5 text-sm font-bold shadow-2xl disabled:opacity-50"
+            className="btn-premium btn-gold w-full mt-4 py-5 shadow-gold-lg"
           >
-            {loading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'ACCEDER AL PORTAL' : 'CREAR CUENTA PREMIUM')}
+            {loading ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : (
+              <>{mode === 'login' ? 'INICIAR SESIÓN' : 'SOLICITAR MEMBRESÍA'} <ShieldCheck size={20} /></>
+            )}
           </button>
         </form>
 
-        <div className="mt-10 text-center text-sm">
-          <p className="text-dim">
-            {mode === 'login' ? '¿Aún no es cliente Gold?' : '¿Ya tiene una membresía?'} 
+        <div className="mt-12 text-center">
+          <p className="text-dim text-sm font-medium">
+            {mode === 'login' ? '¿Aún no es cliente Gold?' : '¿Ya tiene una cuenta?'}
             <Link 
-              to={mode === 'login' ? '/register' : '/login'} 
-              className="text-gold-primary font-bold ml-2 hover:underline"
+              to={mode === 'login' ? '/register' : '/login'}
+              className="text-gold-primary font-black ml-2 hover:underline tracking-tight"
             >
-              {mode === 'login' ? 'Solicitar Membresía' : 'Iniciar Sesión'}
+              {mode === 'login' ? 'Registrarse Aquí' : 'Entrar Ahora'}
             </Link>
           </p>
         </div>

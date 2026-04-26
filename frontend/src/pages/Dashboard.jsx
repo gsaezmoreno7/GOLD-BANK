@@ -26,7 +26,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
 
-  const API_URL = 'http://localhost:3000';
+  const API_URL = import.meta.env.VITE_API_URL || '';
 
   useEffect(() => {
     fetchData();
@@ -250,7 +250,7 @@ const TransferForm = ({ onCancel, onSuccess }) => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/transactions/transfer', 
+      await axios.post(`${API_URL}/api/transactions/transfer`, 
         { destination: dest, amount: parseFloat(amount), description: desc },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -299,7 +299,7 @@ const DepositForm = ({ onCancel, onSuccess }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/transactions/deposit', 
+      await axios.post(`${API_URL}/api/transactions/deposit`, 
         { amount: parseFloat(amount) },
         { headers: { Authorization: `Bearer ${token}` } }
       );

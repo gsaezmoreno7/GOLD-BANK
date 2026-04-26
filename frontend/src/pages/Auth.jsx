@@ -25,7 +25,8 @@ const Auth = ({ mode = 'login' }) => {
     setError('');
     
     try {
-      const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      // Use relative path in production to avoid localhost issues
+      const apiURL = import.meta.env.VITE_API_URL || '';
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const response = await axios.post(`${apiURL}${endpoint}`, formData);
       

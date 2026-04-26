@@ -45,8 +45,13 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`\n🏦 GOLD BANK API IS LIVE`);
-    console.log(`🚀 Server: http://localhost:${PORT}`);
-    console.log(`📚 Docs:   http://localhost:${PORT}/api-docs\n`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`\n🏦 GOLD BANK API IS LIVE`);
+        console.log(`🚀 Server: http://localhost:${PORT}`);
+        console.log(`📚 Docs:   http://localhost:${PORT}/api-docs\n`);
+    });
+}
+
+module.exports = app;

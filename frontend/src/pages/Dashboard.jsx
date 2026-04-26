@@ -34,7 +34,7 @@ const Dashboard = () => {
 
   const handleLogout = () => { localStorage.clear(); navigate('/login'); };
 
-  if (loading) return <div style={{ height: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#d4af37' }}>Cargando portal...</div>;
+  if (loading) return <div style={{ height: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d4af37' }}>Cargando portal...</div>;
 
   return (
     <div style={{ minHeight: '100vh', background: '#050505', color: 'white', fontFamily: "'Outfit', sans-serif", display: 'flex' }}>

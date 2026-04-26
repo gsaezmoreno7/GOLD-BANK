@@ -57,7 +57,7 @@ const Auth = ({ mode = 'login' }) => {
 
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card">
         <div style={{ textAlign: 'center', marginBottom: '35px' }}>
-          <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #d4af37 0%, #f2d388 100%)', borderRadius: '15px', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justify-content: 'center' }}>
+          <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #d4af37 0%, #f2d388 100%)', borderRadius: '15px', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Shield size={30} color="black" />
           </div>
           <h2 style={{ fontSize: '2.2rem', fontWeight: '900' }} className="gold-text">

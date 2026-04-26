@@ -45,72 +45,48 @@ const Auth = ({ mode = 'login' }) => {
   };
 
   return (
-    <div className="flex-center" style={{ minHeight: '100vh', padding: '20px', background: 'var(--bg-black)', position: 'relative', overflow: 'hidden' }}>
-      {/* Background Orbs */}
-      <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '60%', height: '60%', background: 'rgba(212, 175, 55, 0.05)', borderRadius: '50%', filter: 'blur(100px)' }}></div>
-      <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '60%', height: '60%', background: 'rgba(154, 125, 70, 0.05)', borderRadius: '50%', filter: 'blur(100px)' }}></div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#050505', padding: '20px', fontFamily: "'Outfit', sans-serif" }}>
+      <style>{`
+        .glass-card { background: rgba(20, 20, 22, 0.9); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.2); width: 100%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .gold-text { background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .input-premium { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; width: 100%; color: white; margin-bottom: 20px; outline: none; transition: 0.3s; }
+        .input-premium:focus { border-color: #d4af37; background: rgba(255,255,255,0.08); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); color: black; padding: 15px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
+      `}</style>
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass-card"
-        style={{ maxWidth: '500px', zIndex: 10 }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div className="logo-icon" style={{ margin: '0 auto 25px', width: '70px', height: '70px' }}>
-            <Shield size={35} />
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card">
+        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
+          <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #d4af37 0%, #f2d388 100%)', borderRadius: '15px', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justify-content: 'center' }}>
+            <Shield size={30} color="black" />
           </div>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '10px' }} className="gold-text">
-            {mode === 'login' ? 'Acceso Privado' : 'Membresía Gold'}
+          <h2 style={{ fontSize: '2.2rem', fontWeight: '900' }} className="gold-text">
+            {mode === 'login' ? 'Acceso Gold' : 'Membresía'}
           </h2>
-          <p style={{ color: 'var(--text-gray)', fontSize: '1.1rem' }}>
-            {mode === 'login' ? 'Bienvenido a su portal exclusivo' : 'Inicie su camino al éxito financiero'}
-          </p>
         </div>
 
-        {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', borderRadius: '12px', marginBottom: '25px', fontSize: '0.9rem', fontWeight: '600' }}>
-            {error}
-          </div>
-        )}
+        {error && <div style={{ color: '#ff4444', background: 'rgba(255,0,0,0.1)', padding: '10px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'center' }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
             <>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--gold-light)' }}>NOMBRE COMPLETO</label>
-              <input name="full_name" type="text" placeholder="Juan Pérez" className="input-premium" onChange={handleChange} required />
-              
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--gold-light)' }}>RUT</label>
-              <input name="rut" type="text" placeholder="12.345.678-9" className="input-premium" onChange={handleChange} required />
+              <input name="full_name" type="text" placeholder="Nombre Completo" className="input-premium" onChange={handleChange} required />
+              <input name="rut" type="text" placeholder="RUT" className="input-premium" onChange={handleChange} required />
             </>
           )}
+          <input name="email" type="email" placeholder="Correo Electrónico" className="input-premium" onChange={handleChange} required />
+          <input name="password" type="password" placeholder="Clave Maestra" className="input-premium" onChange={handleChange} required />
 
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--gold-light)' }}>CORREO ELECTRÓNICO</label>
-          <input name="email" type="email" placeholder="usuario@email.com" className="input-premium" onChange={handleChange} required />
-
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: '700', color: 'var(--gold-light)' }}>CLAVE MAESTRA</label>
-          <input name="password" type="password" placeholder="••••••••••••" className="input-premium" onChange={handleChange} required />
-
-          <button type="submit" disabled={loading} className="btn-gold" style={{ width: '100%', marginTop: '20px', justifyContent: 'center', height: '60px' }}>
+          <button type="submit" disabled={loading} className="btn-gold">
             {loading ? <Loader2 className="animate-spin" /> : (
-              <>
-                {mode === 'login' ? 'ENTRAR AL PORTAL' : 'CONFIRMAR SOLICITUD'}
-                <ChevronRight size={20} />
-              </>
+              <>{mode === 'login' ? 'ENTRAR' : 'REGISTRARME'} <ChevronRight size={20} /></>
             )}
           </button>
         </form>
 
-        <div style={{ marginTop: '30px', textAlign: 'center' }}>
-          <Link 
-            to={mode === 'login' ? '/register' : '/login'} 
-            style={{ color: 'var(--text-gray)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}
-          >
-            {mode === 'login' ? (
-              <>¿No tiene cuenta? <span style={{ color: 'var(--gold-primary)' }}>Regístrese aquí</span></>
-            ) : (
-              <div className="flex-center" style={{ gap: '8px' }}><ArrowLeft size={16} /> Volver al Acceso</div>
-            )}
+        <div style={{ marginTop: '25px', textAlign: 'center' }}>
+          <Link to={mode === 'login' ? '/register' : '/login'} style={{ color: '#aaa', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}>
+            {mode === 'login' ? '¿No tiene cuenta? Regístrese' : '¿Ya es miembro? Acceda'}
           </Link>
         </div>
       </motion.div>

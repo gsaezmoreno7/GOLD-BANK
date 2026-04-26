@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Mail, Lock, User, IdentificationCard, ArrowLeft, Loader2 } from 'lucide-react';
+import { Shield, Mail, Lock, User, IdCard, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -90,7 +90,7 @@ const Auth = ({ mode = 'login' }) => {
               <div className="space-y-2">
                 <label className="text-xs font-bold text-dim uppercase tracking-widest ml-1">RUT</label>
                 <div className="relative">
-                  <IdentificationCard className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
+                  <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" size={18} />
                   <input 
                     name="rut"
                     type="text" 

@@ -9,12 +9,8 @@
   --text-main: #FFFFFF;
   --text-dim: #A0A0A0;
   --accent-blue: #1E3A8A;
-  
-  --glass-bg: rgba(10, 10, 12, 0.7);
+  --glass-bg: rgba(10, 10, 12, 0.8);
   --glass-border: rgba(212, 175, 55, 0.2);
-  
-  --shadow-gold: 0 10px 30px rgba(212, 175, 55, 0.1);
-  --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -27,35 +23,55 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   font-family: 'Outfit', sans-serif;
-  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-h1, h2, h3 {
-  font-family: 'Playfair Display', serif;
+/* --- UTILIDADES DE LAYOUT (ELIMINANDO EL ERROR) --- */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: justify-between; } /* Error aquí, corregido abajo */
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+.gap-10 { gap: 2.5rem; }
+.w-full { width: 100%; }
+.max-w-7xl { max-width: 80rem; margin: 0 auto; }
+.max-w-md { max-width: 28rem; }
+.p-6 { padding: 1.5rem; }
+.p-8 { padding: 2rem; }
+.p-10 { padding: 2.5rem; }
+.px-8 { padding-left: 2rem; padding-right: 2rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.pt-40 { padding-top: 10rem; }
+.mb-8 { margin-bottom: 2rem; }
+.text-center { text-align: center; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.z-50 { z-index: 50; }
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+@media (min-width: 768px) {
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:flex { display: flex; }
 }
 
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--gold-dark);
-  border-radius: 10px;
-}
-
-/* Utility Classes */
+/* --- ESTILOS PREMIUM --- */
 .gold-gradient {
-  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-weight: 800;
 }
 
 .bg-gold-gradient {
-  background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+  color: black;
 }
 
 .glass-card {
@@ -63,40 +79,42 @@ h1, h2, h3 {
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 24px;
-  box-shadow: var(--shadow-gold);
 }
 
 .btn-premium {
-  padding: 14px 28px;
+  padding: 1rem 2rem;
   border-radius: 50px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  display: flex;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-  color: #000;
+  color: black;
 }
 
 .btn-gold:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+.text-dim { color: var(--text-dim); }
+.tracking-tighter { letter-spacing: -0.05em; }
+.tracking-widest { letter-spacing: 0.1em; }
+
+/* Animaciones */
+@keyframes pulse-gold {
+  0% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 0.1; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.animate-pulse {
+  animation: pulse-gold 4s infinite ease-in-out;
 }

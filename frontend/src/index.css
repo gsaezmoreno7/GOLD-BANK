@@ -132,6 +132,18 @@ h1, h2, h3 {
   box-shadow: 0 15px 35px rgba(212, 175, 55, 0.5);
 }
 
+.shadow-gold {
+  box-shadow: 0 4px 14px 0 rgba(212, 175, 55, 0.39);
+}
+
+.shadow-gold-lg {
+  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
+}
+
+.shadow-gold-xl {
+  box-shadow: 0 20px 40px rgba(212, 175, 55, 0.5);
+}
+
 .text-dim { color: var(--text-dim); line-height: 1.6; }
 
 /* Efecto de Luces de Fondo */

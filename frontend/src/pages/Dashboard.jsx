@@ -52,152 +52,95 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-12 h-12 border-4 border-gold-primary border-t-transparent rounded-full"
-        />
+      <div className="flex-center" style={{ minHeight: '100vh', background: '#000' }}>
+        <div style={{ width: '50px', height: '50px', border: '5px solid #222', borderTopColor: 'var(--gold-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-['Outfit']">
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-black)' }}>
       {/* SIDEBAR */}
-      <aside className="fixed left-0 top-0 h-full w-24 md:w-72 bg-bg-card border-r border-white/5 flex flex-col items-center py-10 z-50">
-        <div className="w-14 h-14 bg-gold-gradient rounded-2xl flex items-center justify-center mb-16 shadow-gold-lg">
-          <Shield size={30} className="text-black" />
+      <aside style={{ width: '280px', background: 'var(--bg-card)', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', padding: '40px 20px', position: 'fixed', height: '100vh' }}>
+        <div className="logo-container" style={{ marginBottom: '60px', justifyContent: 'center' }}>
+          <div className="logo-icon"><Shield size={24} /></div>
+          <span style={{ fontSize: '20px', fontWeight: '900' }}>GOLD<span className="gold-text">BANK</span></span>
         </div>
 
-        <nav className="flex-1 space-y-4 w-full px-4">
-          <NavItem icon={<LayoutDashboard size={24} />} label="Dashboard" active />
-          <NavItem icon={<Wallet size={24} />} label="Cuentas" />
-          <NavItem icon={<History size={24} />} label="Movimientos" />
-          <NavItem icon={<CreditCard size={24} />} label="Tarjetas" />
-          <NavItem icon={<User size={24} />} label="Perfil" />
+        <nav style={{ flex: 1 }}>
+          <NavItem icon={<LayoutDashboard size={22} />} label="Dashboard" active />
+          <NavItem icon={<Wallet size={22} />} label="Mis Cuentas" />
+          <NavItem icon={<History size={22} />} label="Movimientos" />
+          <NavItem icon={<CreditCard size={22} />} label="Tarjetas" />
         </nav>
 
         <button 
           onClick={handleLogout}
-          className="mt-auto p-4 text-text-dim hover:text-red-400 transition-colors flex items-center gap-4 w-full px-8 font-semibold"
+          style={{ background: 'transparent', border: 'none', color: '#ff4444', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 25px', fontWeight: '700', cursor: 'pointer', fontSize: '1rem' }}
         >
-          <LogOut size={24} />
-          <span className="hidden md:inline">Cerrar Sesión</span>
+          <LogOut size={22} /> Cerrar Sesión
         </button>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="pl-24 md:pl-72 p-6 md:p-12">
-        {/* HEADER */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+      <main style={{ marginLeft: '280px', flex: 1, padding: '60px' }}>
+        <header className="flex-between" style={{ marginBottom: '50px' }}>
           <div>
-            <h1 className="text-4xl md:text-5xl font-black mb-2">
-              Bienvenido, <span className="text-gold-gradient">{user.full_name?.split(' ')[0]}</span>
+            <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '10px' }}>
+              Hola, <span className="gold-text">{user.full_name?.split(' ')[0]}</span>
             </h1>
-            <p className="text-text-dim text-lg font-medium">Estado de su cuenta Gold Premium</p>
+            <p style={{ color: 'var(--text-gray)', fontWeight: '600' }}>Resumen de su cuenta exclusiva</p>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="relative group hidden lg:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim" size={20} />
-              <input 
-                type="text" 
-                placeholder="Buscar transacción..." 
-                className="bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-3 w-64 focus:border-gold-primary outline-none transition-all"
-              />
+          <div className="flex-center" style={{ gap: '20px' }}>
+            <div style={{ position: 'relative' }}>
+              <Bell size={28} />
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '10px', height: '10px', background: 'var(--gold-primary)', borderRadius: '50%', border: '2px solid black' }}></div>
             </div>
-            <button className="p-3 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all relative">
-              <Bell size={24} />
-              <span className="absolute top-2 right-2 w-3 h-3 bg-gold-primary rounded-full border-2 border-black"></span>
-            </button>
+            <div className="logo-icon" style={{ borderRadius: '50%', width: '50px', height: '50px' }}><User size={24} /></div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '40px' }}>
           {/* BALANCE CARD */}
-          <div className="lg:col-span-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gold-gradient rounded-[40px] p-10 md:p-14 text-black relative overflow-hidden shadow-gold-2xl group"
-            >
-              <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                <Shield size={200} />
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-12">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.2em] font-black opacity-60 mb-2">Saldo Disponible</p>
-                    <h2 className="text-5xl md:text-7xl font-black tracking-tighter">
-                      ${account?.balance?.toLocaleString('es-CL')}
-                    </h2>
-                  </div>
-                  <div className="bg-black/10 p-4 rounded-3xl backdrop-blur-sm">
-                    <CreditCard size={32} />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-4">
-                  <button className="flex-1 min-w-[140px] bg-black text-white px-8 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-zinc-900 transition-all shadow-xl">
-                    <Send size={20} /> Transferir
-                  </button>
-                  <button className="flex-1 min-w-[140px] bg-black/20 text-black px-8 py-5 rounded-2xl font-bold flex items-center justify-center gap-3 backdrop-blur-md hover:bg-black/30 transition-all">
-                    <Plus size={20} /> Recargar
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* QUICK ACTIONS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-              <QuickAction icon={<Send />} label="Transferir" />
-              <QuickAction icon={<ArrowDownLeft />} label="Recibir" />
-              <QuickAction icon={<CreditCard />} label="Tarjetas" />
-              <QuickAction icon={<Settings />} label="Ajustes" />
-            </div>
+          <div style={{ background: 'var(--gold-gradient)', borderRadius: '40px', padding: '50px', color: '#000', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 50px rgba(212, 175, 55, 0.2)' }}>
+             <Shield size={200} style={{ position: 'absolute', right: '-40px', top: '-40px', opacity: 0.1 }} />
+             <p style={{ fontWeight: '800', opacity: 0.6, marginBottom: '15px', letterSpacing: '2px' }}>SALDO DISPONIBLE</p>
+             <h2 style={{ fontSize: '5rem', fontWeight: '900', marginBottom: '40px', letterSpacing: '-3px' }}>
+               ${account?.balance?.toLocaleString('es-CL')}
+             </h2>
+             <div style={{ display: 'flex', gap: '20px' }}>
+               <button className="btn-gold" style={{ background: '#000', color: '#fff' }}><Send size={20} /> Transferir</button>
+               <button className="btn-gold" style={{ background: 'rgba(0,0,0,0.1)', border: '2px solid black' }}><Plus size={20} /> Recargar</button>
+             </div>
           </div>
 
-          {/* RECENT TRANSACTIONS */}
-          <div className="lg:col-span-4">
-            <div className="glass-card p-8 h-full">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-black">Movimientos</h3>
-                <button className="text-gold-primary text-sm font-bold hover:underline">Ver Todo</button>
-              </div>
+          {/* TRANSACTIONS */}
+          <div className="glass-card" style={{ padding: '40px' }}>
+            <div className="flex-between" style={{ marginBottom: '30px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Movimientos</h3>
+              <History size={20} style={{ color: 'var(--gold-primary)' }} />
+            </div>
 
-              <div className="space-y-6">
-                {transactions.length > 0 ? transactions.map((t, idx) => (
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    key={t.id} 
-                    className="flex items-center gap-5 group cursor-pointer"
-                  >
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
-                      t.type === 'income' ? 'bg-green-500/10 text-green-400 group-hover:bg-green-500/20' : 'bg-red-500/10 text-red-400 group-hover:bg-red-500/20'
-                    }`}>
-                      {t.type === 'income' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+              {transactions.length > 0 ? transactions.map((t) => (
+                <div key={t.id} className="flex-between">
+                  <div className="flex-center" style={{ gap: '15px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px' }}>
+                      {t.type === 'income' ? <ArrowDownLeft color="#4ade80" /> : <ArrowUpRight color="#f87171" />}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-lg mb-0.5">{t.description}</p>
-                      <p className="text-text-dim text-sm font-medium">{new Date(t.created_at).toLocaleDateString()}</p>
+                    <div>
+                      <p style={{ fontWeight: '700', fontSize: '1.1rem' }}>{t.description}</p>
+                      <p style={{ color: 'var(--text-gray)', fontSize: '0.85rem' }}>{new Date(t.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div className={`text-right font-black text-lg ${
-                      t.type === 'income' ? 'text-green-400' : 'text-white'
-                    }`}>
-                      {t.type === 'income' ? '+' : '-'}${Math.abs(t.amount).toLocaleString('es-CL')}
-                    </div>
-                  </motion.div>
-                )) : (
-                  <div className="text-center py-20 opacity-30">
-                    <History size={64} className="mx-auto mb-4" />
-                    <p className="font-bold">Sin movimientos aún</p>
                   </div>
-                )}
-              </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: '900', fontSize: '1.1rem', color: t.type === 'income' ? '#4ade80' : 'white' }}>
+                      {t.type === 'income' ? '+' : '-'}${Math.abs(t.amount).toLocaleString('es-CL')}
+                    </p>
+                  </div>
+                </div>
+              )) : <p style={{ textAlign: 'center', color: '#444' }}>Sin actividad reciente</p>}
             </div>
           </div>
         </div>
@@ -207,23 +150,20 @@ const Dashboard = () => {
 };
 
 const NavItem = ({ icon, label, active = false }) => (
-  <button className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-bold ${
-    active 
-      ? 'bg-gold-primary/10 text-gold-primary' 
-      : 'text-text-dim hover:bg-white/5 hover:text-white'
-  }`}>
-    {icon}
-    <span className="hidden md:inline">{label}</span>
-  </button>
-);
-
-const QuickAction = ({ icon, label }) => (
-  <button className="bg-bg-card border border-white/5 p-6 rounded-3xl flex flex-col items-center gap-3 hover:border-gold-primary/50 transition-all group">
-    <div className="text-text-dim group-hover:text-gold-primary transition-colors">
-      {React.cloneElement(icon, { size: 28 })}
-    </div>
-    <span className="text-sm font-bold text-text-dim group-hover:text-white">{label}</span>
-  </button>
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '15px', 
+    padding: '18px 25px', 
+    borderRadius: '15px', 
+    marginBottom: '10px', 
+    cursor: 'pointer',
+    background: active ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
+    color: active ? 'var(--gold-primary)' : 'var(--text-gray)',
+    fontWeight: '700'
+  }}>
+    {icon} <span>{label}</span>
+  </div>
 );
 
 export default Dashboard;

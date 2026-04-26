@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Shield, CreditCard, PieChart, Users, ArrowRight, Menu, X, ChevronRight, Globe, ShieldCheck, BadgeDollarSign, Zap, Lock, User } from 'lucide-react';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import heroPremium from './assets/hero_premium.png';
 
 const LandingPage = () => {
   return (
@@ -62,7 +63,7 @@ const LandingPage = () => {
       <section className="relative h-[650px] overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="/src/assets/hero_premium.png" 
+            src={heroPremium} 
             alt="Premium Banking" 
             className="w-full h-full object-cover object-center scale-105"
           />

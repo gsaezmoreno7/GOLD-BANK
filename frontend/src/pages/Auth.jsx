@@ -38,7 +38,9 @@ const Auth = ({ mode = 'login' }) => {
         navigate('/login');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Ha ocurrido un error inesperado');
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Ha ocurrido un error inesperado';
+      setError(errorMsg);
+      console.error('Auth Error details:', err.response?.data);
     } finally {
       setLoading(false);
     }

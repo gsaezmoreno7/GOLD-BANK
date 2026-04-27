@@ -4,7 +4,7 @@ import {
   Shield, CreditCard, ArrowUpRight, ArrowDownLeft, 
   LogOut, Bell, History, Send, Wallet, Plus, 
   Zap, TrendingUp, ShieldCheck, ChevronRight,
-  PieChart, Settings
+  PieChart, Settings, LayoutDashboard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';

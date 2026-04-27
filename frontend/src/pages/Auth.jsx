@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, Mail, Lock, User, IdCard, 
   ArrowLeft, Loader2, ChevronRight,
-  Eye, EyeOff, CheckCircle2
+  Eye, EyeOff, CheckCircle2, ShieldCheck
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';

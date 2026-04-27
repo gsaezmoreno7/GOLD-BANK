@@ -5,8 +5,8 @@ import {
   LogOut, Bell, History, Send, Wallet, Plus, 
   Zap, TrendingUp, ShieldCheck, ChevronRight,
   PieChart, Settings, LayoutDashboard, Lock, Unlock,
-  Copy, Eye, Search, AlertCircle, CheckCircle2,
-  Cpu, Crown, Landmark
+  Copy, Eye, EyeOff, Search, AlertCircle, CheckCircle2,
+  Cpu, Crown, Landmark, Award
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -56,7 +56,7 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [showCVV, setShowCVV] = useState(false);
+  const [showFullDetails, setShowFullDetails] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const [amount, setAmount] = useState('');
   const [destRut, setDestRut] = useState('');
@@ -210,7 +210,7 @@ const Dashboard = () => {
 
                 <div>
                   <p style={{ fontSize: '1.6rem', fontWeight: '500', letterSpacing: '6px', marginBottom: '30px', color: isBlocked ? '#444' : '#fff' }}>
-                    {isBlocked ? '•••• •••• •••• ••••' : '•••• •••• •••• 8892'}
+                    {isBlocked ? '•••• •••• •••• ••••' : '4152 8812 3341 8892'}
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <div>
@@ -218,8 +218,8 @@ const Dashboard = () => {
                       <p style={{ fontWeight: '900', fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase' }}>{user.full_name}</p>
                     </div>
                     <div>
-                      <p className="stat-label" style={{ marginBottom: '5px', color: '#444' }}>{showCVV ? 'CVV' : 'EXP'}</p>
-                      <p style={{ fontWeight: '900', color: '#d4af37' }}>{showCVV ? '912' : '12/28'}</p>
+                      <p className="stat-label" style={{ marginBottom: '5px', color: '#444' }}>EXP</p>
+                      <p style={{ fontWeight: '900', color: '#d4af37' }}>12/28</p>
                     </div>
                   </div>
                 </div>
@@ -227,10 +227,10 @@ const Dashboard = () => {
 
               <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
                 <button onClick={() => setIsBlocked(!isBlocked)} style={{ flex: 1, padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', background: isBlocked ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', color: isBlocked ? '#ff4444' : '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', transition: '0.3s' }}>
-                  {isBlocked ? <Unlock size={18} /> : <Lock size={18} />} {isBlocked ? 'ENABLE CARD' : 'BLOCK CARD'}
+                  {isBlocked ? <Unlock size={18} /> : <Lock size={18} />} {isBlocked ? 'ENABLE' : 'BLOCK'}
                 </button>
-                <button onClick={() => setShowCVV(!showCVV)} style={{ padding: '16px 25px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)', color: 'white', cursor: 'pointer' }}>
-                  {showCVV ? <EyeOff size={20} /> : <Eye size={20} />}
+                <button onClick={() => setShowFullDetails(true)} style={{ padding: '16px 25px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)', color: '#d4af37', fontWeight: '800', cursor: 'pointer' }}>
+                  VIEW DETAILS
                 </button>
               </div>
             </div>
@@ -305,6 +305,27 @@ const Dashboard = () => {
                   {opLoading ? 'PROCESSING...' : 'EXECUTE TRANSACTION'}
                 </button>
               </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* FULL DETAILS MODAL */}
+        {showFullDetails && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowFullDetails(false)} style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)' }} />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ position: 'relative', background: 'linear-gradient(135deg, #121214 0%, #000 100%)', width: '100%', maxWidth: '420px', padding: '50px', borderRadius: '40px', border: '1px solid #d4af37', textAlign: 'center', boxShadow: '0 0 100px rgba(212,175,55,0.2)' }}>
+              <ShieldCheck size={60} color="#d4af37" style={{ marginBottom: '30px' }} />
+              <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '40px' }}>Card Credentials</h2>
+              
+              <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div><p className="stat-label">FULL NUMBER</p><p style={{ fontSize: '1.4rem', fontWeight: '700', letterSpacing: '4px' }}>4152 8812 3341 8892</p></div>
+                <div style={{ display: 'flex', gap: '50px' }}>
+                  <div><p className="stat-label">EXPIRY</p><p style={{ fontSize: '1.2rem', fontWeight: '700' }}>12/2028</p></div>
+                  <div><p className="stat-label">CVV CODE</p><p style={{ fontSize: '1.2rem', fontWeight: '700', color: '#d4af37' }}>912</p></div>
+                </div>
+                <div><p className="stat-label">VIRTUAL TYPE</p><p style={{ fontSize: '1.1rem', fontWeight: '700' }}>GOLD PLATINUM DEBIT</p></div>
+              </div>
+              <button onClick={() => setShowFullDetails(false)} className="btn-luxury" style={{ width: '100%', marginTop: '50px', justifyContent: 'center' }}>CLOSE SECURE VIEW</button>
             </motion.div>
           </div>
         )}

@@ -36,12 +36,12 @@ const Dashboard = () => {
 
         console.log('Fetching dashboard data from:', apiURL);
         const [accRes, transRes] = await Promise.all([
-          axios.get(`${apiURL}/api/accounts`, config),
-          axios.get(`${apiURL}/api/transactions`, config)
+          axios.get(`${apiURL}/api/accounts/me`, config),
+          axios.get(`${apiURL}/api/transactions/history`, config)
         ]);
 
-        if (accRes.data.data && accRes.data.data.length > 0) {
-          setAccount(accRes.data.data[0]);
+        if (accRes.data.data) {
+          setAccount(accRes.data.data);
         } else {
           console.error('No account found for user');
           setError('No se encontró una cuenta activa. Contacte a soporte.');

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Shield, Mail, Lock, User, IdCard, 
+import {
+  Shield, Mail, Lock, User, IdCard,
   ArrowLeft, Loader2, ChevronRight,
   Eye, EyeOff, CheckCircle2, ShieldCheck
 } from 'lucide-react';
@@ -28,12 +28,12 @@ const Auth = ({ mode = 'login' }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const apiURL = import.meta.env.VITE_API_URL || '';
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const response = await axios.post(`${apiURL}${endpoint}`, formData);
-      
+
       if (mode === 'login') {
         localStorage.setItem('token', response.data.data.session.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
@@ -104,12 +104,12 @@ const Auth = ({ mode = 'login' }) => {
               </div>
             </>
           )}
-          
+
           <div className="input-group">
             <Mail className="input-icon" size={18} />
             <input name="email" type="email" placeholder="Correo Electrónico" className="input-premium" onChange={handleChange} required autoComplete="email" />
           </div>
-          
+
           <div className="input-group">
             <Lock className="input-icon" size={18} />
             <input name="password" type={showPassword ? "text" : "password"} placeholder="Clave Maestra" className="input-premium" onChange={handleChange} required />

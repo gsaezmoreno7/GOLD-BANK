@@ -53,15 +53,15 @@ const Auth = ({ mode = 'login' }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'radial-gradient(circle at center, #111 0%, #000 100%)', padding: '20px', fontFamily: "'Outfit', sans-serif" }}>
       <style>{`
-        .glass-card { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); padding: 50px; border-radius: 40px; border: 1px solid rgba(212, 175, 55, 0.15); width: 100%; max-width: 480px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); }
-        .gold-text { background: linear-gradient(135deg, #d4af37 0%, #f2d388 50%, #9a7d46 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-premium { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 18px 20px 18px 50px; border-radius: 15px; width: 100%; color: white; outline: none; transition: 0.3s; font-size: 1rem; }
+        .glass-card { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(25px); padding: 60px 50px; border-radius: 40px; border: 1px solid rgba(212, 175, 55, 0.15); width: 100%; max-width: 440px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; }
+        .form-container { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .input-group { position: relative; margin-bottom: 20px; width: 100%; }
+        .input-premium { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 18px 20px 18px 50px; border-radius: 18px; width: 100%; color: white; outline: none; transition: 0.3s; font-size: 1rem; display: flex; align-items: center; }
         .input-premium:focus { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); box-shadow: 0 0 20px rgba(212,175,55,0.1); }
-        .input-icon { position: absolute; left: 18px; top: 20px; color: #555; }
-        .eye-icon { position: absolute; right: 18px; top: 20px; color: #555; cursor: pointer; transition: 0.3s; }
+        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #555; }
+        .eye-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: #555; cursor: pointer; transition: 0.3s; z-index: 10; }
         .eye-icon:hover { color: #d4af37; }
-        .btn-gold { background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); color: black; padding: 18px; border-radius: 15px; font-weight: 900; border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.4s; font-size: 1rem; letter-spacing: 1px; }
+        .btn-gold { background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); color: black; padding: 20px; border-radius: 18px; font-weight: 900; border: none; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.4s; font-size: 1rem; letter-spacing: 1px; }
         .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4); }
         .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>

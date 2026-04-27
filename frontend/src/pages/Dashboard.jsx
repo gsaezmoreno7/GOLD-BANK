@@ -5,39 +5,49 @@ import {
   LogOut, Bell, History, Send, Wallet, Plus, 
   Zap, TrendingUp, ShieldCheck, ChevronRight,
   PieChart, Settings, LayoutDashboard, Lock, Unlock,
-  Copy, Eye, Search, AlertCircle, CheckCircle2
+  Copy, Eye, Search, AlertCircle, CheckCircle2,
+  Cpu, Crown, Landmark
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-// Componentes internos
+// --- DISEÑO DE COMPONENTES PREMIUM ---
+
 const SidebarItem = ({ icon, label, active = false, onClick }) => (
-  <div 
+  <motion.div 
+    whileHover={{ x: 5, backgroundColor: 'rgba(212,175,55,0.08)' }}
     onClick={onClick}
     style={{ 
-      display: 'flex', alignItems: 'center', gap: '15px', padding: '16px 20px', 
-      borderRadius: '15px', cursor: 'pointer', transition: '0.3s',
-      background: active ? 'rgba(212,175,55,0.15)' : 'transparent',
-      color: active ? '#d4af37' : '#555',
-      fontWeight: '800'
+      display: 'flex', alignItems: 'center', gap: '15px', padding: '14px 20px', 
+      borderRadius: '16px', cursor: 'pointer', transition: '0.3s',
+      background: active ? 'linear-gradient(90deg, rgba(212,175,55,0.15) 0%, transparent 100%)' : 'transparent',
+      color: active ? '#f2d388' : '#555',
+      borderLeft: active ? '3px solid #d4af37' : '3px solid transparent',
+      fontWeight: active ? '800' : '600',
+      marginBottom: '5px'
     }}
   >
-    {icon} <span>{label}</span>
-  </div>
+    {icon} <span style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>{label}</span>
+  </motion.div>
 );
 
-const Modal = ({ isOpen, onClose, title, children }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)' }} />
-        <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} style={{ position: 'relative', background: '#121214', width: '100%', maxWidth: '450px', padding: '40px', borderRadius: '35px', border: '1px solid #222', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#d4af37', marginBottom: '25px' }}>{title}</h2>
-          {children}
-        </motion.div>
-      </div>
-    )}
-  </AnimatePresence>
+const GlassCard = ({ children, style, glowColor = 'rgba(212,175,55,0.1)' }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{ 
+      background: 'rgba(20, 20, 22, 0.6)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: '30px',
+      border: '1px solid rgba(255,255,255,0.05)',
+      padding: '30px',
+      position: 'relative',
+      boxShadow: `0 20px 40px rgba(0,0,0,0.4), 0 0 50px ${glowColor}`,
+      ...style 
+    }}
+  >
+    {children}
+  </motion.div>
 );
 
 const Dashboard = () => {
@@ -47,7 +57,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
   const [showCVV, setShowCVV] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'transfer' | 'deposit'
+  const [activeModal, setActiveModal] = useState(null);
   const [amount, setAmount] = useState('');
   const [destRut, setDestRut] = useState('');
   const [opLoading, setOpLoading] = useState(false);
@@ -70,202 +80,248 @@ const Dashboard = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleOperation = async (e) => {
-    e.preventDefault();
-    setOpLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const apiURL = import.meta.env.VITE_API_URL || '';
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      if (activeModal === 'transfer') {
-        await axios.post(`${apiURL}/api/transactions/transfer`, { destination_rut: destRut, amount: parseFloat(amount), description: 'Transferencia Gold' }, config);
-      } else {
-        await axios.post(`${apiURL}/api/transactions/deposit`, { amount: parseFloat(amount) }, config);
-      }
-      
-      alert('Operación exitosa');
-      setActiveModal(null);
-      setAmount('');
-      setDestRut('');
-      fetchData();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Error en la operación');
-    } finally { setOpLoading(false); }
-  };
-
   const handleLogout = () => { localStorage.clear(); navigate('/login'); };
 
-  if (loading) return <div style={{ height: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d4af37' }}>Portal Gold Cargando...</div>;
+  if (loading) return (
+    <div style={{ height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} style={{ width: '50px', height: '50px', border: '2px solid rgba(212,175,55,0.1)', borderTopColor: '#d4af37', borderRadius: '50%' }} />
+      <p style={{ marginTop: '20px', color: '#d4af37', fontWeight: '900', letterSpacing: '3px', fontSize: '0.7rem' }}>GOLD TERMINAL 2.0</p>
+    </div>
+  );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050505', color: 'white', fontFamily: "'Outfit', sans-serif", display: 'flex' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 0% 0%, #151515 0%, #050505 100%)', color: 'white', fontFamily: "'Outfit', sans-serif", display: 'flex' }}>
       <style>{`
-        .sidebar { width: 280px; background: #0a0a0b; border-right: 1px solid #1a1a1a; padding: 40px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; }
-        .main { flex: 1; padding: 50px; margin-left: 280px; }
-        .gold-card { background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); padding: 45px; border-radius: 40px; color: black; box-shadow: 0 25px 60px rgba(212, 175, 55, 0.15); }
-        .virtual-card { 
-          width: 400px; height: 240px; border-radius: 25px; padding: 35px;
-          background: ${isBlocked ? 'linear-gradient(135deg, #222, #444)' : 'linear-gradient(135deg, #161618 0%, #000 100%)'};
-          border: 1px solid ${isBlocked ? '#444' : 'rgba(212,175,55,0.3)'};
-          display: flex; flex-direction: column; justify-content: space-between; position: relative;
-          box-shadow: 0 30px 60px rgba(0,0,0,0.6); transition: 0.5s;
-          filter: ${isBlocked ? 'grayscale(1)' : 'none'}; opacity: ${isBlocked ? 0.7 : 1};
+        .sidebar { width: 280px; background: rgba(5,5,5,0.8); backdrop-filter: blur(30px); border-right: 1px solid rgba(255,255,255,0.03); padding: 50px 25px; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .main-content { flex: 1; margin-left: 280px; padding: 60px 80px; }
+        .gold-gradient-text { background: linear-gradient(135deg, #d4af37 0%, #f2d388 50%, #9a7d46 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn-luxury { 
+          background: linear-gradient(135deg, #d4af37 0%, #f2d388 100%); 
+          color: black; border: none; padding: 16px 30px; border-radius: 20px; 
+          font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 12px; 
+          transition: 0.4s; box-shadow: 0 10px 20px rgba(212,175,55,0.2); 
         }
-        .btn-premium { background: black; color: white; border: none; padding: 15px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-        .btn-premium:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        .input-gold { background: #1a1a1c; border: 1px solid #333; padding: 15px; border-radius: 12px; width: 100%; color: white; margin-bottom: 20px; outline: none; }
-        .input-gold:focus { border-color: #d4af37; }
-        .card-label { font-size: 0.65rem; font-weight: 900; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+        .btn-luxury:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 30px rgba(212,175,55,0.4); }
+        .btn-ghost { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: white; padding: 16px 30px; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: #d4af37; }
+        .stat-label { font-size: 0.7rem; font-weight: 900; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        .scroll-hide::-webkit-scrollbar { display: none; }
       `}</style>
 
-      {/* SIDEBAR */}
+      {/* --- SIDEBAR --- */}
       <aside className="sidebar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '60px' }}>
-          <div style={{ width: '45px', height: '45px', background: 'linear-gradient(135deg, #d4af37, #f2d388)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}><Shield size={24} /></div>
-          <span style={{ fontWeight: '900', fontSize: '1.4rem', letterSpacing: '-1.5px' }}>GOLD BANK</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '80px' }}>
+          <div style={{ width: '45px', height: '45px', background: 'linear-gradient(135deg, #d4af37, #f2d388)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(212,175,55,0.3)' }}>
+            <Landmark size={22} color="black" />
+          </div>
+          <span style={{ fontWeight: '900', fontSize: '1.4rem', letterSpacing: '-1.5px' }}>GOLD<span style={{ color: '#d4af37' }}>BANK</span></span>
         </div>
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <SidebarItem icon={<LayoutDashboard size={22} />} label="Resumen" active />
-          <SidebarItem icon={<Wallet size={22} />} label="Mis Cuentas" />
-          <SidebarItem icon={<CreditCard size={22} />} label="Mis Tarjetas" />
-          <SidebarItem icon={<History size={22} />} label="Auditoría" />
+
+        <nav style={{ flex: 1 }}>
+          <p style={{ color: '#333', fontSize: '0.65rem', fontWeight: '900', letterSpacing: '2px', marginBottom: '25px', paddingLeft: '20px' }}>MAIN NAVIGATION</p>
+          <SidebarItem icon={<LayoutDashboard size={20} />} label="Overview" active />
+          <SidebarItem icon={<Wallet size={20} />} label="Treasury" />
+          <SidebarItem icon={<CreditCard size={20} />} label="Platinum Cards" />
+          <SidebarItem icon={<History size={20} />} label="Audit Logs" />
+          <div style={{ margin: '30px 0', height: '1px', background: 'rgba(255,255,255,0.03)' }} />
+          <SidebarItem icon={<PieChart size={20} />} label="Investments" />
+          <SidebarItem icon={<Settings size={20} />} label="Security" />
         </nav>
-        <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#ff4444', display: 'flex', alignItems: 'center', gap: '15px', padding: '20px', fontWeight: '800', cursor: 'pointer', fontSize: '1rem' }}>
-          <LogOut size={22} /> Cerrar Sesión
-        </button>
+
+        <motion.button 
+          whileHover={{ x: 5 }}
+          onClick={handleLogout} 
+          style={{ background: 'rgba(255,68,68,0.05)', border: 'none', color: '#ff4444', display: 'flex', alignItems: 'center', gap: '15px', padding: '20px', borderRadius: '20px', fontWeight: '800', cursor: 'pointer', marginTop: 'auto' }}
+        >
+          <LogOut size={20} /> Logout Session
+        </motion.button>
       </aside>
 
-      <main className="main">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
+      {/* --- MAIN CONTENT --- */}
+      <main className="main-content">
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '80px' }}>
           <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '5px' }}>Hola, <span style={{ color: '#d4af37' }}>{user.full_name?.split(' ')[0]}</span></h1>
-            <p style={{ color: '#555', fontWeight: '700', fontSize: '1.1rem' }}>Banca Privada de Gestión Patrimonial</p>
+            <h1 style={{ fontSize: '3.5rem', fontWeight: '900', letterSpacing: '-2px', marginBottom: '5px' }}>
+              Welcome back, <span className="gold-gradient-text">{user.full_name?.split(' ')[0]}</span>
+            </h1>
+            <p style={{ color: '#555', fontWeight: '700', fontSize: '1.1rem', letterSpacing: '0.5px' }}>Your assets are secured and growing.</p>
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <div style={{ background: '#0f0f11', border: '1px solid #222', padding: '15px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%' }}></div>
-              <span style={{ fontWeight: '800', fontSize: '0.8rem' }}>CONEXIÓN SEGURA</span>
-            </div>
-            <button style={{ background: '#0f0f11', border: '1px solid #222', color: 'white', padding: '15px', borderRadius: '18px' }}><Bell size={24} /></button>
+            <motion.div whileHover={{ scale: 1.05 }} style={{ background: 'rgba(74, 222, 128, 0.1)', border: '1px solid rgba(74, 222, 128, 0.2)', padding: '15px 25px', borderRadius: '22px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80' }}></div>
+              <span style={{ fontWeight: '900', fontSize: '0.75rem', color: '#4ade80', letterSpacing: '1px' }}>ENCRYPTED CONNECTION</span>
+            </motion.div>
+            <button style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'white', padding: '18px', borderRadius: '22px', cursor: 'pointer' }}><Bell size={24} /></button>
           </div>
         </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '50px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '60px' }}>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* SALDO */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="gold-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <p style={{ fontWeight: '800', opacity: 0.6, fontSize: '0.9rem', marginBottom: '15px', letterSpacing: '2px' }}>DISPONIBILIDAD TOTAL</p>
-                  <h2 style={{ fontSize: '5.5rem', fontWeight: '900', marginBottom: '45px', letterSpacing: '-3px' }}>${account?.balance?.toLocaleString('es-CL')}</h2>
+            {/* --- BALANCE PANEL --- */}
+            <GlassCard style={{ padding: '60px', overflow: 'hidden' }} glowColor="rgba(212,175,55,0.05)">
+              <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '250px', height: '250px', background: 'var(--gold-gradient)', opacity: 0.05, filter: 'blur(80px)', borderRadius: '50%' }}></div>
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                  <Crown size={20} color="#d4af37" />
+                  <span style={{ fontWeight: '900', fontSize: '0.8rem', color: '#666', letterSpacing: '3px' }}>TOTAL ASSETS VALUE</span>
                 </div>
-                <Zap size={60} style={{ opacity: 0.2 }} />
+                <h2 style={{ fontSize: '6rem', fontWeight: '900', letterSpacing: '-5px', marginBottom: '50px' }}>
+                  <span style={{ fontSize: '3rem', verticalAlign: 'super', color: '#d4af37' }}>$</span>
+                  {account?.balance?.toLocaleString('es-CL')}
+                </h2>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  <button className="btn-luxury" onClick={() => setActiveModal('transfer')}><Send size={20} /> New Transfer</button>
+                  <button className="btn-ghost" onClick={() => setActiveModal('deposit')}><Plus size={20} /> Top Up Balance</button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '20px' }}>
-                <button className="btn-premium" onClick={() => setActiveModal('transfer')}><Send size={20} /> Transferir</button>
-                <button className="btn-premium" style={{ background: 'none', border: '3px solid black', color: 'black' }} onClick={() => setActiveModal('deposit')}><Plus size={20} /> Abonar</button>
-              </div>
-            </motion.div>
+            </GlassCard>
 
-            {/* WIDGETS */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '25px' }}>
-              <div style={{ background: '#0f0f11', padding: '30px', borderRadius: '30px', border: '1px solid #1a1a1a' }}>
-                <p className="card-label">Rendimiento</p>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#4ade80', marginTop: '10px' }}>+12.4%</h3>
-              </div>
-              <div style={{ background: '#0f0f11', padding: '30px', borderRadius: '30px', border: '1px solid #1a1a1a' }}>
-                <p className="card-label">Ahorro Gold</p>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#d4af37', marginTop: '10px' }}>$1.2M</h3>
-              </div>
-              <div style={{ background: '#0f0f11', padding: '30px', borderRadius: '30px', border: '1px solid #1a1a1a' }}>
-                <p className="card-label">Estado</p>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '900', color: '#fff', marginTop: '10px' }}>PREMIUM ELITE</h3>
-              </div>
+            {/* --- QUICK STATS --- */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px' }}>
+              <StatWidget label="Market Performance" value="+18.2%" color="#4ade80" icon={<TrendingUp size={16} />} />
+              <StatWidget label="Gold Reserve" value="2.4 Kg" color="#d4af37" icon={<Zap size={16} />} />
+              <StatWidget label="Elite Points" value="84,200" color="#f2d388" icon={<Award size={16} />} />
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* TARJETA VIRTUAL */}
-            <div style={{ position: 'relative' }}>
-              <motion.div whileHover={{ scale: 1.02 }} className="virtual-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ width: '55px', height: '40px', background: 'linear-gradient(135deg, #d4af37, #9a7d46)', borderRadius: '8px' }}></div>
-                  <Shield size={32} color={isBlocked ? '#ff4444' : '#d4af37'} />
+            {/* --- VIRTUAL GLASS CARD --- */}
+            <div style={{ perspective: '1000px' }}>
+              <motion.div 
+                whileHover={{ rotateY: 5, rotateX: -5 }}
+                style={{ 
+                  width: '100%', height: '260px', borderRadius: '30px', padding: '40px',
+                  background: isBlocked ? 'rgba(30,30,30,0.8)' : 'linear-gradient(135deg, rgba(30,30,35,0.9) 0%, rgba(10,10,12,1) 100%)',
+                  border: '1px solid rgba(212,175,55,0.2)',
+                  backdropFilter: 'blur(30px)',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                  boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
+                  position: 'relative', overflow: 'hidden',
+                  transition: '0.5s'
+                }}
+              >
+                {!isBlocked && <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(45deg, transparent 40%, rgba(212,175,55,0.05) 50%, transparent 60%)', transition: '0.5s' }}></div>}
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ width: '60px', height: '45px', background: 'linear-gradient(135deg, #d4af37, #9a7d46)', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.3)' }}></div>
+                  <Shield size={32} color={isBlocked ? '#ff4444' : '#d4af37'} style={{ filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.3))' }} />
                 </div>
+
                 <div>
-                  <p style={{ fontSize: '1.5rem', fontWeight: '500', letterSpacing: '5px', marginBottom: '25px' }}>
+                  <p style={{ fontSize: '1.6rem', fontWeight: '500', letterSpacing: '6px', marginBottom: '30px', color: isBlocked ? '#444' : '#fff' }}>
                     {isBlocked ? '•••• •••• •••• ••••' : '•••• •••• •••• 8892'}
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <div>
-                      <p className="card-label" style={{ marginBottom: '5px', color: '#aaa' }}>Titular</p>
-                      <p style={{ fontWeight: '800', textTransform: 'uppercase', fontSize: '1rem' }}>{user.full_name}</p>
+                      <p className="stat-label" style={{ marginBottom: '5px', color: '#444' }}>HOLDER</p>
+                      <p style={{ fontWeight: '900', fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase' }}>{user.full_name}</p>
                     </div>
                     <div>
-                      <p className="card-label" style={{ marginBottom: '5px', color: '#aaa' }}>{showCVV ? 'CVV' : 'Exp'}</p>
-                      <p style={{ fontWeight: '800' }}>{showCVV ? '912' : '12/28'}</p>
+                      <p className="stat-label" style={{ marginBottom: '5px', color: '#444' }}>{showCVV ? 'CVV' : 'EXP'}</p>
+                      <p style={{ fontWeight: '900', color: '#d4af37' }}>{showCVV ? '912' : '12/28'}</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
-              
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                <button onClick={() => setIsBlocked(!isBlocked)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #222', background: isBlocked ? '#ff4444' : '#111', color: isBlocked ? 'black' : 'white', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  {isBlocked ? <Unlock size={18} /> : <Lock size={18} />} {isBlocked ? 'DESBLOQUEAR' : 'BLOQUEAR'}
+
+              <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
+                <button onClick={() => setIsBlocked(!isBlocked)} style={{ flex: 1, padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', background: isBlocked ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', color: isBlocked ? '#ff4444' : '#fff', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', transition: '0.3s' }}>
+                  {isBlocked ? <Unlock size={18} /> : <Lock size={18} />} {isBlocked ? 'ENABLE CARD' : 'BLOCK CARD'}
                 </button>
-                <button onClick={() => setShowCVV(!showCVV)} style={{ padding: '12px 20px', borderRadius: '12px', border: '1px solid #222', background: '#111', color: 'white', cursor: 'pointer' }}>
-                  <Eye size={18} />
+                <button onClick={() => setShowCVV(!showCVV)} style={{ padding: '16px 25px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)', color: 'white', cursor: 'pointer' }}>
+                  {showCVV ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* MOVIMIENTOS */}
-            <div style={{ background: '#0f0f11', padding: '35px', borderRadius: '35px', border: '1px solid #1a1a1a', flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: '900' }}>Movimientos</h3>
-                <Link to="#" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: '800', fontSize: '0.8rem' }}>VER TODO</Link>
+            {/* --- RECENT ACTIVITY --- */}
+            <GlassCard style={{ padding: '40px', flex: 1 }} glowColor="transparent">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '900' }}>Recent Activity</h3>
+                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#d4af37', borderBottom: '2px solid rgba(212,175,55,0.2)', paddingBottom: '4px', cursor: 'pointer' }}>VIEW ALL</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {transactions.slice(0, 4).map(t => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', maxHeight: '300px', overflowY: 'auto' }} className="scroll-hide">
+                {transactions.length > 0 ? transactions.map(t => (
                   <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                      <div style={{ background: '#1a1a1c', padding: '12px', borderRadius: '12px' }}>
-                        {t.type === 'income' ? <ArrowDownLeft size={20} color="#4ade80" /> : <ArrowUpRight size={20} color="#f87171" />}
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                      <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.02)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        {t.type === 'income' ? <ArrowDownLeft size={22} color="#4ade80" /> : <ArrowUpRight size={22} color="#f87171" />}
                       </div>
                       <div>
-                        <p style={{ fontWeight: '800', fontSize: '0.95rem' }}>{t.description}</p>
-                        <p style={{ fontSize: '0.75rem', color: '#444' }}>{new Date(t.created_at).toLocaleDateString()}</p>
+                        <p style={{ fontWeight: '800', fontSize: '1rem', marginBottom: '4px' }}>{t.description}</p>
+                        <p style={{ fontSize: '0.75rem', color: '#444', fontWeight: '700' }}>{new Date(t.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <p style={{ fontWeight: '900', color: t.type === 'income' ? '#4ade80' : 'white' }}>
+                    <p style={{ fontWeight: '900', fontSize: '1.1rem', color: t.type === 'income' ? '#4ade80' : '#fff' }}>
                       {t.type === 'income' ? '+' : '-'}${Math.abs(t.amount).toLocaleString('es-CL')}
                     </p>
                   </div>
-                ))}
+                )) : <p style={{ color: '#333', textAlign: 'center', padding: '40px' }}>No transactions recorded yet.</p>}
               </div>
-            </div>
+            </GlassCard>
           </div>
 
         </div>
       </main>
 
-      {/* MODALES */}
-      <Modal isOpen={!!activeModal} onClose={() => setActiveModal(null)} title={activeModal === 'transfer' ? 'Transferencia Gold' : 'Abonar a Cuenta'}>
-        <form onSubmit={handleOperation}>
-          {activeModal === 'transfer' && (
-            <input type="text" placeholder="RUT del destinatario" className="input-gold" value={destRut} onChange={(e) => setDestRut(e.target.value)} required />
-          )}
-          <input type="number" placeholder="Monto ($)" className="input-gold" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-          <button type="submit" disabled={opLoading} className="btn-premium" style={{ width: '100%', background: 'var(--gold-gradient)', color: 'black' }}>
-            {opLoading ? 'Procesando...' : 'CONFIRMAR OPERACIÓN'}
-          </button>
-        </form>
-      </Modal>
+      {/* --- MODALS --- */}
+      <AnimatePresence>
+        {activeModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModal(null)} style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }} />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }} style={{ position: 'relative', background: '#121214', width: '100%', maxWidth: '480px', padding: '50px', borderRadius: '40px', border: '1px solid rgba(212,175,55,0.2)', boxShadow: '0 50px 100px rgba(0,0,0,0.8)' }}>
+              <h2 style={{ fontSize: '2.2rem', fontWeight: '900', marginBottom: '10px' }} className="gold-gradient-text">
+                {activeModal === 'transfer' ? 'Send Funds' : 'Add Balance'}
+              </h2>
+              <p style={{ color: '#555', marginBottom: '35px', fontWeight: '700' }}>Confirm your elite transaction below.</p>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setOpLoading(true);
+                try {
+                  const token = localStorage.getItem('token');
+                  const apiURL = import.meta.env.VITE_API_URL || '';
+                  const config = { headers: { Authorization: `Bearer ${token}` } };
+                  if (activeModal === 'transfer') {
+                    await axios.post(`${apiURL}/api/transactions/transfer`, { destination_rut: destRut, amount: parseFloat(amount), description: 'Transferencia Elite' }, config);
+                  } else {
+                    await axios.post(`${apiURL}/api/transactions/deposit`, { amount: parseFloat(amount) }, config);
+                  }
+                  setActiveModal(null); fetchData(); setAmount(''); setDestRut('');
+                } catch (err) { alert(err.response?.data?.error || 'Transaction failed'); } finally { setOpLoading(false); }
+              }}>
+                {activeModal === 'transfer' && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <p className="stat-label">DESTINATION RUT</p>
+                    <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(e.target.value)} required />
+                  </div>
+                )}
+                <div style={{ marginBottom: '40px' }}>
+                  <p className="stat-label">AMOUNT (CLP)</p>
+                  <input type="number" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px', fontSize: '1.5rem', color: '#d4af37' }} value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                </div>
+                <button type="submit" disabled={opLoading} className="btn-luxury" style={{ width: '100%', justifyContent: 'center', padding: '20px', fontSize: '1.2rem' }}>
+                  {opLoading ? 'PROCESSING...' : 'EXECUTE TRANSACTION'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
 };
+
+const StatWidget = ({ label, value, color, icon }) => (
+  <GlassCard style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '10px' }} glowColor="transparent">
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <p className="stat-label" style={{ margin: 0 }}>{label}</p>
+      <div style={{ color: color }}>{icon}</div>
+    </div>
+    <p style={{ fontSize: '1.6rem', fontWeight: '900', color: color }}>{value}</p>
+  </GlassCard>
+);
 
 export default Dashboard;

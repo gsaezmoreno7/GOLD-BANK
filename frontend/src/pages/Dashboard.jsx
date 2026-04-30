@@ -164,7 +164,10 @@ const Dashboard = () => {
               <div style={{ width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80' }}></div>
               <span style={{ fontWeight: '900', fontSize: '0.75rem', color: '#4ade80', letterSpacing: '1px' }}>CONEXIÓN ENCRIPTADA</span>
             </motion.div>
-            <button style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'white', padding: '18px', borderRadius: '22px', cursor: 'pointer' }}><Bell size={24} /></button>
+            <button style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', color: 'white', padding: '15px', borderRadius: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bell size={22} /></button>
+            <motion.button whileHover={{ scale: 1.05 }} onClick={handleLogout} style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid rgba(255,68,68,0.2)', color: '#ff4444', padding: '15px 25px', borderRadius: '22px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <LogOut size={18} /> Cerrar Sesión
+            </motion.button>
           </div>
         </header>
 
@@ -173,16 +176,18 @@ const Dashboard = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
               <GlassCard style={{ padding: '60px', overflow: 'hidden' }} glowColor="rgba(212,175,55,0.05)">
                 <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '250px', height: '250px', background: 'var(--gold-gradient)', opacity: 0.05, filter: 'blur(80px)', borderRadius: '50%' }}></div>
-                <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                    <div style={{ width: '40px', height: '1px', background: 'rgba(212,175,55,0.5)' }}></div>
                     <Crown size={20} color="#d4af37" />
-                    <span style={{ fontWeight: '900', fontSize: '0.8rem', color: '#666', letterSpacing: '3px' }}>VALOR TOTAL DE ACTIVOS</span>
+                    <span style={{ fontWeight: '900', fontSize: '0.85rem', color: '#888', letterSpacing: '3px' }}>VALOR TOTAL DE ACTIVOS</span>
+                    <div style={{ width: '40px', height: '1px', background: 'rgba(212,175,55,0.5)' }}></div>
                   </div>
-                  <h2 style={{ fontSize: '6rem', fontWeight: '900', letterSpacing: '-5px', marginBottom: '50px' }}>
-                    <span style={{ fontSize: '3rem', verticalAlign: 'super', color: '#d4af37' }}>$</span>
+                  <h2 style={{ fontSize: '6rem', fontWeight: '900', letterSpacing: '-3px', marginBottom: '60px' }}>
+                    <span style={{ fontSize: '3rem', verticalAlign: 'super', color: '#d4af37', marginRight: '15px' }}>$</span>
                     {account?.balance?.toLocaleString('es-CL')}
                   </h2>
-                  <div style={{ display: 'flex', gap: '20px' }}>
+                  <div style={{ display: 'flex', gap: '40px' }}>
                     <button className="btn-luxury" onClick={() => setActiveModal('transfer')}><Send size={20} /> Nueva Transferencia</button>
                     <button className="btn-ghost" onClick={() => setActiveModal('deposit')}><Plus size={20} /> Cargar Saldo</button>
                   </div>

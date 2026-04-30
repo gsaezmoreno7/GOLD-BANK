@@ -76,7 +76,7 @@ const Dashboard = () => {
         axios.get(`${apiURL}/api/accounts/me`, config),
         axios.get(`${apiURL}/api/transactions/history`, config)
       ]);
-      setAccount(accRes.data.data);
+      setAccount(accRes.data.data.account);
       setTransactions(transRes.data.data || []);
     } catch (err) { navigate('/login'); } finally { setLoading(false); }
   };

@@ -51,7 +51,7 @@ const GlassCard = ({ children, style, glowColor = 'rgba(212,175,55,0.1)' }) => (
 );
 
 const Dashboard = () => {
-  const [user] = useState(() => JSON.parse(localStorage.getItem('user')) || {});
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || {});
   const [account, setAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +79,7 @@ const Dashboard = () => {
         axios.get(`${apiURL}/api/transactions/history`, config)
       ]);
       setAccount(accRes.data.data.account);
+      setUser(prev => ({ ...prev, ...accRes.data.data.profile }));
       setTransactions(transRes.data.data || []);
     } catch (err) { navigate('/login'); } finally { setLoading(false); }
   };

@@ -112,7 +112,7 @@ const Auth = ({ mode = 'login' }) => {
 
           <div className="input-group">
             <Lock className="input-icon" size={18} />
-            <input name="password" type={showPassword ? "text" : "password"} placeholder="Clave Maestra" className="input-premium" onChange={handleChange} required />
+            <input name="password" type={showPassword ? "text" : "password"} placeholder="Clave Maestra (Mín. 8 caracteres)" className="input-premium" onChange={handleChange} required minLength="8" />
             <div className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>

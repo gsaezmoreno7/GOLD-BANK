@@ -134,3 +134,51 @@ exports.deposit = asyncHandler(async (req, res) => {
         data: { newBalance }
     });
 });
+
+/**
+ * Abono externo (Transferencia desde banco del profesor u otro banco)
+ */
+exports.externalDeposit = asyncHandler(async (req, res) => {
+    const { amount, destination, origin_bank = 'Banco Externo', description = 'Transferencia interbancaria' } = req.body;
+
+    if (!amount || amount <= 0) throw new ApiError(400, 'Monto inválido');
+    if (!destination) throw new ApiError(400, 'Destino (RUT o N° de Cuenta) es requerido');
+
+    // Buscar cuenta destino por RUT o Número de cuenta
+    const { data: receiverAcc, error: receiverErr } = await supabaseAdmin
+        .from('accounts')
+        .select('*, profiles(full_name)')
+        .or(`account_number.eq.${destination}, user_id.in.(SELECT id FROM profiles WHERE rut='${destination}')`)
+        .single();
+
+    if (receiverErr) throw new ApiError(404, 'Cuenta de destino no encontrada en Gold Bank');
+
+    // Abonar al receptor
+    const newBalance = parseFloat(receiverAcc.balance) + parseFloat(amount);
+    const { error: updReceiverErr } = await supabaseAdmin
+        .from('accounts')
+        .update({ balance: newBalance })
+        .eq('id', receiverAcc.id);
+
+    if (updReceiverErr) throw new ApiError(500, 'Error procesando abono externo');
+
+    // Registrar Transacción
+    await supabaseAdmin.from('transactions').insert([{
+        account_id: receiverAcc.id,
+        type: 'transfer_in',
+        amount,
+        balance_after: newBalance,
+        description: `Recibido desde ${origin_bank}: ${description}`,
+        ip_address: req.ip
+    }]);
+
+    res.json({
+        status: 'success',
+        message: 'Transferencia externa recibida y acreditada con éxito',
+        data: { 
+            amount, 
+            receiver: receiverAcc.profiles.full_name,
+            account: receiverAcc.account_number 
+        }
+    });
+});

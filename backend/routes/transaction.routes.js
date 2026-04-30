@@ -36,4 +36,36 @@ router.get('/history', authenticate, transactionController.getHistory);
  */
 router.post('/deposit', authenticate, transactionController.deposit);
 
+/**
+ * @swagger
+ * /api/transactions/external-transfer:
+ *   post:
+ *     summary: Recibir una transferencia desde un banco externo (Webhook del Profesor)
+ *     tags: [Transactions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [destination, amount]
+ *             properties:
+ *               destination:
+ *                 type: string
+ *                 example: "12.345.678-9"
+ *               amount:
+ *                 type: number
+ *                 example: 50000
+ *               origin_bank:
+ *                 type: string
+ *                 example: "Banco Universidad"
+ *               description:
+ *                 type: string
+ *                 example: "Prueba de Integración"
+ *     responses:
+ *       200:
+ *         description: Transferencia recibida y procesada exitosamente
+ */
+router.post('/external-transfer', transactionController.externalDeposit);
+
 module.exports = router;

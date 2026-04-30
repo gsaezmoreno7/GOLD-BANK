@@ -28,8 +28,14 @@ exports.register = asyncHandler(async (req, res) => {
         .insert([{ id: userId, full_name, rut, email }]);
 
     if (profileError) {
-        // Rollback manual de auth si falla el perfil (Supabase no tiene transacciones entre Auth y DB fácilmente)
+        // Rollback manual de auth si falla el perfil
         await supabaseAdmin.auth.admin.deleteUser(userId);
+        
+        // Manejar error de RUT duplicado de forma amigable
+        if (profileError.code === '23505' || profileError.message.includes('profiles_rut_key')) {
+            throw new ApiError(400, 'Este RUT ya se encuentra registrado en el sistema. Por favor, inicie sesión.');
+        }
+        
         throw new ApiError(400, `Error Perfil: ${profileError.message}`);
     }
 

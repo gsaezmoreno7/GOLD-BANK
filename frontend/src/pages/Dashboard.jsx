@@ -63,6 +63,8 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'accounts', 'cards', 'audit'
   const [amount, setAmount] = useState('');
   const [destRut, setDestRut] = useState('');
+  const [destBankUrl, setDestBankUrl] = useState('');
+  const [isExternalBank, setIsExternalBank] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -268,18 +270,38 @@ const Dashboard = () => {
                   const apiURL = import.meta.env.VITE_API_URL || '';
                   const config = { headers: { Authorization: `Bearer ${token}` } };
                   if (activeModal === 'transfer') {
-                    await axios.post(`${apiURL}/api/transactions/transfer`, { destination: destRut, amount: parseFloat(amount), description: 'Transferencia Elite' }, config);
+                    const payload = { destination: destRut, amount: parseFloat(amount), description: 'Transferencia Elite' };
+                    if (isExternalBank && destBankUrl) {
+                      payload.destination_bank_url = destBankUrl;
+                    }
+                    await axios.post(`${apiURL}/api/transactions/transfer`, payload, config);
                   } else {
                     await axios.post(`${apiURL}/api/transactions/deposit`, { amount: parseFloat(amount) }, config);
                   }
-                  setActiveModal(null); fetchData(); setAmount(''); setDestRut('');
-                } catch (err) { alert(err.response?.data?.error || 'Fallo en la transacción'); } finally { setOpLoading(false); }
+                  setActiveModal(null); fetchData(); setAmount(''); setDestRut(''); setDestBankUrl(''); setIsExternalBank(false);
+                } catch (err) { alert(err.response?.data?.error || err.response?.data?.message || err.message || 'Fallo en la transacción'); } finally { setOpLoading(false); }
               }}>
                 {activeModal === 'transfer' && (
-                  <div style={{ marginBottom: '20px' }}>
-                    <p className="stat-label">RUT DESTINATARIO</p>
-                    <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(e.target.value)} required />
-                  </div>
+                  <>
+                    <div style={{ marginBottom: '20px' }}>
+                      <p className="stat-label">RUT DESTINATARIO O N° DE CUENTA</p>
+                      <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(e.target.value)} required />
+                    </div>
+                    
+                    <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <input type="checkbox" id="externalBank" checked={isExternalBank} onChange={(e) => setIsExternalBank(e.target.checked)} style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: '#d4af37' }} />
+                      <label htmlFor="externalBank" style={{ cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem', color: '#888' }}>¿Transferir a otro banco? (API Externa)</label>
+                    </div>
+
+                    <AnimatePresence>
+                      {isExternalBank && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginBottom: '20px' }}>
+                          <p className="stat-label">URL DEL BANCO DESTINO (API DEL PROFESOR)</p>
+                          <input type="url" placeholder="https://banco-profesor.vercel.app/api/webhook" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destBankUrl} onChange={(e) => setDestBankUrl(e.target.value)} required={isExternalBank} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
                 )}
                 <div style={{ marginBottom: '40px' }}>
                   <p className="stat-label">MONTO (CLP)</p>

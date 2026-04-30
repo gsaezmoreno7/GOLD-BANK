@@ -5,7 +5,7 @@ const { asyncHandler, ApiError } = require('../utils/errors');
  * Transferencia entre cuentas
  */
 exports.transfer = asyncHandler(async (req, res) => {
-    const { amount, destination, description } = req.body;
+    const { amount, destination, description, destination_bank_url } = req.body;
     const userId = req.user.id;
 
     if (amount <= 0) throw new ApiError(400, 'El monto debe ser superior a 0');
@@ -13,12 +13,65 @@ exports.transfer = asyncHandler(async (req, res) => {
     // 1. Obtener cuenta origen
     const { data: senderAcc, error: senderErr } = await supabaseAdmin
         .from('accounts')
-        .select('*')
+        .select('*, profiles(full_name)')
         .eq('user_id', userId)
         .single();
 
     if (senderErr || senderAcc.balance < amount) throw new ApiError(400, 'Saldo insuficiente');
 
+    // --- FLUJO TRANSFERENCIA EXTERNA ---
+    if (destination_bank_url) {
+        // Descontar del emisor
+        const { error: updSenderErr } = await supabaseAdmin
+            .from('accounts')
+            .update({ balance: senderAcc.balance - amount })
+            .eq('id', senderAcc.id);
+
+        if (updSenderErr) throw new ApiError(500, 'Error procesando débito para transferencia externa');
+
+        try {
+            // Llamar a la API del banco externo
+            const response = await fetch(destination_bank_url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    destination,
+                    amount,
+                    origin_bank: 'Gold Bank',
+                    description: description || `Transferencia de ${senderAcc.profiles.full_name}`
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`El banco destino rechazó la transacción: ${errorData}`);
+            }
+
+            // Registrar Transacción Exitosa
+            await supabaseAdmin.from('transactions').insert([{
+                account_id: senderAcc.id,
+                type: 'transfer_out',
+                amount,
+                balance_after: senderAcc.balance - amount,
+                description: `Transferencia Externa a ${destination}: ${description}`,
+                destination_account: destination,
+                ip_address: req.ip
+            }]);
+
+            return res.json({
+                status: 'success',
+                message: 'Transferencia externa realizada con éxito',
+                data: { amount, receiver: destination, bank: destination_bank_url }
+            });
+
+        } catch (err) {
+            // Rollback en caso de falla de la API externa
+            await supabaseAdmin.from('accounts').update({ balance: senderAcc.balance }).eq('id', senderAcc.id);
+            throw new ApiError(500, `Fallo en transferencia externa: ${err.message}`);
+        }
+    }
+
+    // --- FLUJO TRANSFERENCIA INTERNA ---
     // 2. Buscar cuenta destino (puede ser por RUT o Número de cuenta)
     const { data: receiverAcc, error: receiverErr } = await supabaseAdmin
         .from('accounts')
@@ -29,8 +82,7 @@ exports.transfer = asyncHandler(async (req, res) => {
     if (receiverErr) throw new ApiError(404, 'Cuenta de destino no válida o no encontrada');
     if (receiverAcc.id === senderAcc.id) throw new ApiError(400, 'No puede transferirse a sí mismo');
 
-    // 3. Ejecutar Movimientos (Simulando transacción)
-    // Descontar del emisor
+    // 3. Ejecutar Movimientos
     const { error: updSenderErr } = await supabaseAdmin
         .from('accounts')
         .update({ balance: senderAcc.balance - amount })
@@ -38,14 +90,12 @@ exports.transfer = asyncHandler(async (req, res) => {
 
     if (updSenderErr) throw new ApiError(500, 'Error procesando débito');
 
-    // Abonar al receptor
     const { error: updReceiverErr } = await supabaseAdmin
         .from('accounts')
         .update({ balance: parseFloat(receiverAcc.balance) + parseFloat(amount) })
         .eq('id', receiverAcc.id);
 
     if (updReceiverErr) {
-        // Rollback básico (reponer al emisor)
         await supabaseAdmin.from('accounts').update({ balance: senderAcc.balance }).eq('id', senderAcc.id);
         throw new ApiError(500, 'Error procesando abono');
     }
@@ -66,7 +116,7 @@ exports.transfer = asyncHandler(async (req, res) => {
         type: 'transfer_in',
         amount,
         balance_after: parseFloat(receiverAcc.balance) + parseFloat(amount),
-        description: `Transferencia recibida de ${senderAcc.user_id}: ${description}`,
+        description: `Transferencia recibida de ${senderAcc.profiles.full_name}: ${description}`,
         ip_address: req.ip
     };
 

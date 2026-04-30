@@ -7,7 +7,7 @@ const validate = (req, res, next) => {
     }
     return res.status(400).json({
         status: 'error',
-        errors: errors.array()
+        error: errors.array().map(e => e.msg).join(', ')
     });
 };
 

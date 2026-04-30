@@ -218,9 +218,10 @@ const Dashboard = () => {
                     <span style={{ fontSize: '3rem', verticalAlign: 'super', color: '#d4af37', marginRight: '15px' }}>$</span>
                     {account?.balance?.toLocaleString('es-CL')}
                   </h2>
-                  <div style={{ display: 'flex', gap: '40px' }}>
+                  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button className="btn-luxury" onClick={() => setActiveModal('transfer')}><Send size={20} /> Nueva Transferencia</button>
-                    <button className="btn-ghost" onClick={() => setActiveModal('deposit')}><Plus size={20} /> Cargar Saldo</button>
+                    <button className="btn-ghost" onClick={() => setActiveModal('receive')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><ArrowDownLeft size={20} /> Recibir Fondos</button>
+                    <button className="btn-ghost" onClick={() => setActiveModal('deposit')} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={20} /> Cargar Saldo</button>
                   </div>
                 </div>
               </GlassCard>
@@ -296,9 +297,39 @@ const Dashboard = () => {
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModal(null)} style={{ position: 'absolute', width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }} />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }} style={{ position: 'relative', background: '#121214', width: '100%', maxWidth: '480px', padding: '50px', borderRadius: '40px', border: '1px solid rgba(212,175,55,0.2)' }}>
-              <h2 style={{ fontSize: '2.2rem', fontWeight: '900', marginBottom: '10px' }} className="gold-gradient-text">{activeModal === 'transfer' ? 'Enviar Fondos' : 'Abonar Saldo'}</h2>
-              <p style={{ color: '#555', marginBottom: '35px', fontWeight: '700' }}>Confirma tu operación elite a continuación.</p>
-              <form onSubmit={async (e) => {
+              <h2 style={{ fontSize: '2.2rem', fontWeight: '900', marginBottom: '10px' }} className="gold-gradient-text">
+                {activeModal === 'transfer' ? 'Enviar Fondos' : activeModal === 'receive' ? 'Datos de Recepción' : 'Abonar Saldo'}
+              </h2>
+              <p style={{ color: '#555', marginBottom: '35px', fontWeight: '700' }}>
+                {activeModal === 'receive' ? 'Comparte tu información bancaria.' : 'Confirma tu operación elite a continuación.'}
+              </p>
+
+              {activeModal === 'receive' ? (
+                <div>
+                  <p style={{ color: '#aaa', marginBottom: '25px', lineHeight: '1.6', fontSize: '0.9rem' }}>
+                    Para que otro banco (o tu profesor) te envíe dinero, envíale los siguientes datos exactos. El sistema procesará el abono automáticamente.
+                  </p>
+                  
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p className="stat-label">TU RUT (DESTINO)</p>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '800', color: '#fff' }}>{user.rut}</p>
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(user.rut); alert('RUT copiado!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer' }}><Copy size={22} /></button>
+                  </div>
+
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ overflow: 'hidden' }}>
+                      <p className="stat-label">URL DE TU BANCO (API EXTERNA)</p>
+                      <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#fff', wordBreak: 'break-all' }}>https://gold-bank-api.vercel.app/api/transactions/external-transfer</p>
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText('https://gold-bank-api.vercel.app/api/transactions/external-transfer'); alert('URL copiada!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer', marginLeft: '15px' }}><Copy size={22} /></button>
+                  </div>
+
+                  <button onClick={() => setActiveModal(null)} className="btn-luxury" style={{ width: '100%', justifyContent: 'center', padding: '20px', fontSize: '1.2rem' }}>ENTENDIDO</button>
+                </div>
+              ) : (
+                <form onSubmit={async (e) => {
                 e.preventDefault();
                 setOpLoading(true);
                 try {
@@ -348,6 +379,7 @@ const Dashboard = () => {
                 </div>
                 <button type="submit" disabled={opLoading} className="btn-luxury" style={{ width: '100%', justifyContent: 'center', padding: '20px', fontSize: '1.2rem' }}>{opLoading ? 'PROCESANDO...' : 'EJECUTAR TRANSACCIÓN'}</button>
               </form>
+              )}
             </motion.div>
           </div>
         )}

@@ -31,6 +31,17 @@ app.use(morgan('dev'));
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Raíz de la API
+app.get('/', (req, res) => {
+    res.json({
+        name: 'Gold Bank API',
+        version: '1.0.0',
+        status: 'online',
+        documentation: '/api-docs',
+        message: 'El servidor backend está funcionando correctamente.'
+    });
+});
+
 // Health Check
 app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
 

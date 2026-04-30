@@ -68,6 +68,16 @@ const Dashboard = () => {
   const [opLoading, setOpLoading] = useState(false);
   const navigate = useNavigate();
 
+  const formatRut = (rut) => {
+    const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (cleanRut.length === 0) return '';
+    if (cleanRut.length <= 1) return cleanRut;
+    let body = cleanRut.slice(0, -1);
+    const checkDigit = cleanRut.slice(-1);
+    body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${body}-${checkDigit}`;
+  };
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -286,7 +296,7 @@ const Dashboard = () => {
                   <>
                     <div style={{ marginBottom: '20px' }}>
                       <p className="stat-label">RUT DESTINATARIO O N° DE CUENTA</p>
-                      <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(e.target.value)} required />
+                      <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(formatRut(e.target.value))} required maxLength="12" />
                     </div>
                     
                     <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>

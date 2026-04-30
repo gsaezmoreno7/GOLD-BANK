@@ -20,8 +20,22 @@ const Auth = ({ mode = 'login' }) => {
   });
   const navigate = useNavigate();
 
+  const formatRut = (rut) => {
+    const cleanRut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (cleanRut.length === 0) return '';
+    if (cleanRut.length <= 1) return cleanRut;
+    let body = cleanRut.slice(0, -1);
+    const checkDigit = cleanRut.slice(-1);
+    body = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${body}-${checkDigit}`;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    if (name === 'rut') {
+      value = formatRut(value);
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -96,23 +110,23 @@ const Auth = ({ mode = 'login' }) => {
             <>
               <div className="input-group">
                 <User className="input-icon" size={18} />
-                <input name="full_name" type="text" placeholder="Nombre Completo" className="input-premium" onChange={handleChange} required autoComplete="name" />
+                <input name="full_name" type="text" placeholder="Nombre Completo" className="input-premium" value={formData.full_name} onChange={handleChange} required autoComplete="name" />
               </div>
               <div className="input-group">
                 <IdCard className="input-icon" size={18} />
-                <input name="rut" type="text" placeholder="RUT (ej: 12.345.678-9)" className="input-premium" onChange={handleChange} required autoComplete="on" />
+                <input name="rut" type="text" placeholder="RUT (ej: 12.345.678-9)" className="input-premium" value={formData.rut} onChange={handleChange} required autoComplete="on" maxLength="12" />
               </div>
             </>
           )}
 
           <div className="input-group">
             <Mail className="input-icon" size={18} />
-            <input name="email" type="email" placeholder="Correo Electrónico" className="input-premium" onChange={handleChange} required autoComplete="email" />
+            <input name="email" type="email" placeholder="Correo Electrónico" className="input-premium" value={formData.email} onChange={handleChange} required autoComplete="email" />
           </div>
 
           <div className="input-group">
             <Lock className="input-icon" size={18} />
-            <input name="password" type={showPassword ? "text" : "password"} placeholder="Clave Maestra (Mín. 8 caracteres)" className="input-premium" onChange={handleChange} required minLength="8" />
+            <input name="password" type={showPassword ? "text" : "password"} placeholder="Clave Maestra (Mín. 8 caracteres)" className="input-premium" value={formData.password} onChange={handleChange} required minLength="8" />
             <div className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>

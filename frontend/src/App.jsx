@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -104,6 +104,19 @@ const GlobalStyles = () => (
 );
 
 const LandingPage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) setIsLoggedIn(true);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+  };
+
   return (
     <div className="landing-wrapper">
       <GlobalStyles />
@@ -134,7 +147,11 @@ const LandingPage = () => {
             <a href="#patrimonio">Patrimonio</a>
             <a href="#servicios">Servicios</a>
             <a href="#seguridad">Seguridad</a>
-            <Link to="/login" className="btn-outline-gold">ACCESO CLIENTES</Link>
+            {isLoggedIn ? (
+              <button onClick={handleLogout} className="btn-outline-gold" style={{ cursor: 'pointer', background: 'transparent' }}>CERRAR SESIÓN</button>
+            ) : (
+              <Link to="/login" className="btn-outline-gold">ACCESO CLIENTES</Link>
+            )}
           </div>
         </div>
       </nav>
@@ -148,19 +165,29 @@ const LandingPage = () => {
           src={heroPremium} className="hero-image" alt="Luxury" 
         />
         <div className="hero-overlay"></div>
-        <div className="container-premium">
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.2 }}>
+        <div className="container-premium flex-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.2 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
               <div style={{ width: '50px', height: '1px', background: 'var(--gold-primary)' }}></div>
               <span style={{ color: 'var(--gold-primary)', fontWeight: '900', letterSpacing: '4px', fontSize: '0.8rem' }}>ESTABLECIDO EN 1924</span>
+              <div style={{ width: '50px', height: '1px', background: 'var(--gold-primary)' }}></div>
             </div>
             <h1 className="hero-title">Definiendo el <br /><span className="gold-text">Estándar de Oro</span></h1>
-            <p style={{ fontSize: '1.4rem', color: '#888', marginBottom: '45px', maxWidth: '650px', fontWeight: '500' }}>
+            <p style={{ fontSize: '1.4rem', color: '#888', marginBottom: '55px', maxWidth: '650px', fontWeight: '500' }}>
               Soluciones bancarias de élite para los líderes de hoy. Seguridad absoluta con un diseño inigualable.
             </p>
-            <div style={{ display: 'flex', gap: '25px', alignItems: 'center' }}>
-              <Link to="/register" className="btn-gold">SOLICITAR INGRESO <ChevronRight size={22} /></Link>
-              <a href="#servicios" style={{ color: 'white', textDecoration: 'none', fontWeight: '800', fontSize: '0.9rem', borderBottom: '1px solid #333', paddingBottom: '5px' }}>Ver Servicios Wealth</a>
+            <div style={{ display: 'flex', gap: '40px', alignItems: 'center', justifyContent: 'center' }}>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/dashboard" className="btn-gold">IR AL PORTAL <ChevronRight size={22} /></Link>
+                  <button onClick={handleLogout} className="btn-outline-gold" style={{ cursor: 'pointer', background: 'transparent' }}>CERRAR SESIÓN</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/register" className="btn-gold">SOLICITAR INGRESO <ChevronRight size={22} /></Link>
+                  <Link to="/login" className="btn-outline-gold">INICIAR SESIÓN</Link>
+                </>
+              )}
             </div>
           </motion.div>
         </div>

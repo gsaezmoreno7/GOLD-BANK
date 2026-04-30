@@ -318,6 +318,14 @@ const Dashboard = () => {
                     <button onClick={() => { navigator.clipboard.writeText(user.rut); alert('RUT copiado!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer' }}><Copy size={22} /></button>
                   </div>
 
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p className="stat-label">TU NÚMERO DE CUENTA</p>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '800', color: '#fff' }}>{account?.account_number}</p>
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(account?.account_number); alert('N° de Cuenta copiado!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer' }}><Copy size={22} /></button>
+                  </div>
+
                   <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ overflow: 'hidden' }}>
                       <p className="stat-label">URL DE TU BANCO (API EXTERNA)</p>

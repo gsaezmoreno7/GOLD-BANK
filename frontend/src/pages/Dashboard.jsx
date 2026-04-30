@@ -117,6 +117,24 @@ const Dashboard = () => {
     </div>
   );
 
+  const generateCardNumber = (str) => {
+    if (!str) return '4152 8812 0000 0000';
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    const numStr = Math.abs(hash).toString().padStart(8, '0').slice(0, 8);
+    return `4152 8812 ${numStr.slice(0, 4)} ${numStr.slice(4)}`;
+  };
+
+  const generateCVV = (str) => {
+    if (!str) return '912';
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return Math.abs(hash).toString().padStart(3, '0').slice(0, 3);
+  };
+
+  const cardNumber = generateCardNumber(user.rut || user.id);
+  const cardCvv = generateCVV(user.id || user.rut);
+
   return (
     <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 0% 0%, #151515 0%, #050505 100%)', color: 'white', fontFamily: "'Outfit', sans-serif", display: 'flex' }}>
       <style>{`
@@ -220,10 +238,17 @@ const Dashboard = () => {
                   {!isBlocked && <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(45deg, transparent 40%, rgba(212,175,55,0.05) 50%, transparent 60%)', transition: '0.5s' }}></div>}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><div style={{ width: '60px', height: '45px', background: 'linear-gradient(135deg, #d4af37, #9a7d46)', borderRadius: '10px' }}></div><Shield size={32} color={isBlocked ? '#ff4444' : '#d4af37'} /></div>
                   <div>
-                    <p style={{ fontSize: '1.6rem', fontWeight: '500', letterSpacing: '6px', marginBottom: '30px', color: isBlocked ? '#444' : '#fff' }}>{isBlocked ? '•••• •••• •••• ••••' : '4152 8812 3341 8892'}</p>
+                    <p style={{ fontSize: '1.6rem', fontWeight: '500', letterSpacing: '6px', marginBottom: '30px', color: isBlocked ? '#444' : '#fff' }}>{isBlocked ? '•••• •••• •••• ••••' : cardNumber}</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <div><p className="stat-label">TITULAR</p><p style={{ fontWeight: '900', textTransform: 'uppercase' }}>{user.full_name}</p></div>
-                      <div><p className="stat-label">EXP</p><p style={{ fontWeight: '900', color: '#d4af37' }}>12/28</p></div>
+                      <div>
+                        <p className="stat-label">TITULAR</p>
+                        <p style={{ fontWeight: '900', textTransform: 'uppercase', marginBottom: '2px' }}>{user.full_name}</p>
+                        <p style={{ fontSize: '0.75rem', color: '#a0a0a0', fontWeight: '600' }}>RUT: {user.rut}</p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p className="stat-label">EXP</p>
+                        <p style={{ fontWeight: '900', color: '#d4af37' }}>12/28</p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -351,10 +376,10 @@ const Dashboard = () => {
               <ShieldCheck size={60} color="#d4af37" style={{ marginBottom: '30px' }} />
               <h2 style={{ fontSize: '1.8rem', fontWeight: '900', marginBottom: '40px' }}>Credenciales de Tarjeta</h2>
               <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                <div><p className="stat-label">NÚMERO COMPLETO</p><p style={{ fontSize: '1.4rem', fontWeight: '700', letterSpacing: '4px' }}>4152 8812 3341 8892</p></div>
+                <div><p className="stat-label">NÚMERO COMPLETO</p><p style={{ fontSize: '1.4rem', fontWeight: '700', letterSpacing: '4px' }}>{cardNumber}</p></div>
                 <div style={{ display: 'flex', gap: '50px' }}>
                   <div><p className="stat-label">VENCIMIENTO</p><p style={{ fontSize: '1.2rem', fontWeight: '700' }}>12/2028</p></div>
-                  <div><p className="stat-label">CÓDIGO CVV</p><p style={{ fontSize: '1.2rem', fontWeight: '700', color: '#d4af37' }}>912</p></div>
+                  <div><p className="stat-label">CÓDIGO CVV</p><p style={{ fontSize: '1.2rem', fontWeight: '700', color: '#d4af37' }}>{cardCvv}</p></div>
                 </div>
               </div>
               <button onClick={() => setShowFullDetails(false)} className="btn-luxury" style={{ width: '100%', marginTop: '50px', justifyContent: 'center' }}>CERRAR VISTA SEGURA</button>

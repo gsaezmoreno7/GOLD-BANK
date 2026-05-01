@@ -74,13 +74,24 @@ exports.transfer = asyncHandler(async (req, res) => {
         }
     }
 
-    // --- FLUJO TRANSFERENCIA INTERNA ---
     // 2. Buscar cuenta destino (puede ser por RUT o Número de cuenta)
-    const { data: receiverAcc, error: receiverErr } = await supabaseAdmin
-        .from('accounts')
-        .select('*, profiles(full_name)')
-        .or(`account_number.eq.${destination}, user_id.in.(SELECT id FROM profiles WHERE rut='${destination}')`)
-        .single();
+    let receiverAcc = null;
+    let receiverErr = null;
+
+    // Primero intentamos buscar por RUT en los perfiles
+    const { data: profile } = await supabaseAdmin.from('profiles').select('id').eq('rut', destination).single();
+
+    if (profile) {
+        // Si encontramos el perfil, buscamos la cuenta por user_id o por account_number
+        const res = await supabaseAdmin.from('accounts').select('*, profiles(full_name)').or(`account_number.eq.${destination},user_id.eq.${profile.id}`).single();
+        receiverAcc = res.data;
+        receiverErr = res.error;
+    } else {
+        // Si no es un RUT válido, buscamos directamente por account_number
+        const res = await supabaseAdmin.from('accounts').select('*, profiles(full_name)').eq('account_number', destination).single();
+        receiverAcc = res.data;
+        receiverErr = res.error;
+    }
 
     if (receiverErr) throw new ApiError(404, 'Cuenta de destino no válida o no encontrada');
     if (receiverAcc.id === senderAcc.id) throw new ApiError(400, 'No puede transferirse a sí mismo');
@@ -198,11 +209,20 @@ exports.externalDeposit = asyncHandler(async (req, res) => {
     if (!destination) throw new ApiError(400, 'Destino (RUT o N° de Cuenta) es requerido');
 
     // Buscar cuenta destino por RUT o Número de cuenta
-    const { data: receiverAcc, error: receiverErr } = await supabaseAdmin
-        .from('accounts')
-        .select('*, profiles(full_name)')
-        .or(`account_number.eq.${destination}, user_id.in.(SELECT id FROM profiles WHERE rut='${destination}')`)
-        .single();
+    let receiverAcc = null;
+    let receiverErr = null;
+
+    const { data: profile } = await supabaseAdmin.from('profiles').select('id').eq('rut', destination).single();
+
+    if (profile) {
+        const res = await supabaseAdmin.from('accounts').select('*, profiles(full_name)').or(`account_number.eq.${destination},user_id.eq.${profile.id}`).single();
+        receiverAcc = res.data;
+        receiverErr = res.error;
+    } else {
+        const res = await supabaseAdmin.from('accounts').select('*, profiles(full_name)').eq('account_number', destination).single();
+        receiverAcc = res.data;
+        receiverErr = res.error;
+    }
 
     if (receiverErr) throw new ApiError(404, 'Cuenta de destino no encontrada en Gold Bank');
 

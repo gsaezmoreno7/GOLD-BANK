@@ -203,7 +203,13 @@ exports.deposit = asyncHandler(async (req, res) => {
  * Abono externo (Transferencia desde banco del profesor u otro banco)
  */
 exports.externalDeposit = asyncHandler(async (req, res) => {
-    const { amount, destination, origin_bank = 'Banco Externo', description = 'Transferencia interbancaria', api_key } = req.body;
+    // Aceptar alias para mayor compatibilidad con otros bancos
+    const rawAmount = req.body.amount || req.body.monto || req.body.valor;
+    const amount = parseFloat(rawAmount);
+    const destination = req.body.destination || req.body.rut || req.body.cuenta || req.body.destinatario || req.body.account;
+    const origin_bank = req.body.origin_bank || req.body.banco || 'Banco Externo';
+    const description = req.body.description || req.body.descripcion || req.body.mensaje || 'Transferencia interbancaria';
+    const api_key = req.body.api_key || req.body.apikey || req.body.clave;
 
     // Validación de API Key
     const providedKey = req.headers['x-api-key'] || req.headers['api-key'] || api_key || (req.headers.authorization && req.headers.authorization.replace('Bearer ', '').trim());
@@ -211,8 +217,8 @@ exports.externalDeposit = asyncHandler(async (req, res) => {
         throw new ApiError(401, 'API Key de Banco no válida o no proporcionada. Se requiere GOLD-BANK-KEY-2026');
     }
 
-    if (!amount || amount <= 0) throw new ApiError(400, 'Monto inválido');
-    if (!destination) throw new ApiError(400, 'Destino (RUT o N° de Cuenta) es requerido');
+    if (!amount || isNaN(amount) || amount <= 0) throw new ApiError(400, 'Error 400: Monto inválido. El JSON debe contener la clave "amount" o "monto" con un valor numérico positivo.');
+    if (!destination) throw new ApiError(400, 'Error 400: Destino requerido. El JSON debe contener la clave "destination", "rut" o "cuenta" con el identificador del usuario.');
 
     // Buscar cuenta destino por RUT o Número de cuenta
     let receiverAcc = null;

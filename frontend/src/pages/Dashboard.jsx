@@ -51,7 +51,7 @@ const GlassCard = ({ children, style, glowColor = 'rgba(212,175,55,0.1)' }) => (
 );
 
 const Dashboard = () => {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || {});
+  const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem('user')) || {});
   const [account, setAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       if (!token) { navigate('/login'); return; }
       const apiURL = import.meta.env.VITE_API_URL || '';
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -111,7 +111,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => { localStorage.clear(); navigate('/login'); };
+  const handleLogout = () => { sessionStorage.clear(); navigate('/login'); };
 
   if (loading) return (
     <div style={{ height: '100vh', background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -344,7 +344,7 @@ const Dashboard = () => {
                 e.preventDefault();
                 setOpLoading(true);
                 try {
-                  const token = localStorage.getItem('token');
+                  const token = sessionStorage.getItem('token');
                   const apiURL = import.meta.env.VITE_API_URL || '';
                   const config = { headers: { Authorization: `Bearer ${token}` } };
                   if (activeModal === 'transfer') {

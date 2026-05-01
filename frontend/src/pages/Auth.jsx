@@ -49,8 +49,8 @@ const Auth = ({ mode = 'login' }) => {
       const response = await axios.post(`${apiURL}${endpoint}`, formData);
 
       if (mode === 'login') {
-        localStorage.setItem('token', response.data.data.session.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        sessionStorage.setItem('token', response.data.data.session.access_token);
+        sessionStorage.setItem('user', JSON.stringify(response.data.data.user));
         navigate('/dashboard');
       } else {
         alert('Membresía creada con éxito. Ya puede acceder.');

@@ -311,7 +311,7 @@ const Dashboard = () => {
               {activeModal === 'receive' ? (
                 <div>
                   <p style={{ color: '#aaa', marginBottom: '25px', lineHeight: '1.6', fontSize: '0.9rem' }}>
-                    Para que otro banco (o tu profesor) te envíe dinero, envíale los siguientes datos exactos. El sistema procesará el abono automáticamente.
+                    Para que una entidad bancaria externa pueda transferir fondos a su cuenta, comparta la siguiente información técnica. El sistema procesará el abono automáticamente de forma segura.
                   </p>
                   
                   <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -405,11 +405,11 @@ const Dashboard = () => {
                     <AnimatePresence>
                       {isExternalBank && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginBottom: '20px' }}>
-                          <p className="stat-label">URL DEL BANCO DESTINO (API DEL PROFESOR)</p>
-                          <input type="url" placeholder="https://banco-profesor.vercel.app/api/webhook" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px', marginBottom: '15px' }} value={destBankUrl} onChange={(e) => setDestBankUrl(e.target.value)} required={isExternalBank} />
+                          <p className="stat-label">URL DEL BANCO DESTINO (WEBHOOK / API)</p>
+                          <input type="url" placeholder="https://banco-externo.com/api/transfer" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px', marginBottom: '15px' }} value={destBankUrl} onChange={(e) => setDestBankUrl(e.target.value)} required={isExternalBank} />
                           
                           <p className="stat-label">API KEY DEL BANCO DESTINO (OPCIONAL)</p>
-                          <input type="text" placeholder="Ej: PROFESOR-KEY-2026" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.3)', padding: '20px', color: '#d4af37' }} value={destApiKey} onChange={(e) => setDestApiKey(e.target.value)} />
+                          <input type="text" placeholder="Ej: EXTERNAL-BANK-KEY" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.3)', padding: '20px', color: '#d4af37' }} value={destApiKey} onChange={(e) => setDestApiKey(e.target.value)} />
                         </motion.div>
                       )}
                     </AnimatePresence>

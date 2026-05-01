@@ -67,6 +67,7 @@ const Dashboard = () => {
   const [destName, setDestName] = useState('');
   const [destEmail, setDestEmail] = useState('');
   const [destBankUrl, setDestBankUrl] = useState('');
+  const [destApiKey, setDestApiKey] = useState('');
   const [isExternalBank, setIsExternalBank] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
   const navigate = useNavigate();
@@ -329,12 +330,20 @@ const Dashboard = () => {
                     <button onClick={() => { navigator.clipboard.writeText(account?.account_number); alert('N° de Cuenta copiado!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer' }}><Copy size={22} /></button>
                   </div>
 
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ overflow: 'hidden' }}>
                       <p className="stat-label">URL DE TU BANCO (API EXTERNA)</p>
                       <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#fff', wordBreak: 'break-all' }}>https://gold-bank-api.vercel.app/api/transactions/external-transfer</p>
                     </div>
                     <button onClick={() => { navigator.clipboard.writeText('https://gold-bank-api.vercel.app/api/transactions/external-transfer'); alert('URL copiada!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer', marginLeft: '15px' }}><Copy size={22} /></button>
+                  </div>
+
+                  <div style={{ background: 'rgba(212,175,55,0.05)', padding: '20px', borderRadius: '15px', marginBottom: '30px', border: '1px solid rgba(212,175,55,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p className="stat-label" style={{ color: '#d4af37' }}>API KEY BANCARIA (CLAVE DE AUTORIZACIÓN)</p>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '900', color: '#d4af37', letterSpacing: '2px' }}>GOLD-BANK-KEY-2026</p>
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText('GOLD-BANK-KEY-2026'); alert('API Key copiada!'); }} style={{ background: 'transparent', border: 'none', color: '#d4af37', cursor: 'pointer' }}><Copy size={22} /></button>
                   </div>
 
                   <button onClick={() => setActiveModal(null)} className="btn-luxury" style={{ width: '100%', justifyContent: 'center', padding: '20px', fontSize: '1.2rem' }}>ENTENDIDO</button>
@@ -358,12 +367,13 @@ const Dashboard = () => {
                     };
                     if (isExternalBank && destBankUrl) {
                       payload.destination_bank_url = destBankUrl;
+                      if (destApiKey) payload.api_key = destApiKey;
                     }
                     await axios.post(`${apiURL}/api/transactions/transfer`, payload, config);
                   } else {
                     await axios.post(`${apiURL}/api/transactions/deposit`, { amount: parseFloat(amount) }, config);
                   }
-                  setActiveModal(null); fetchData(); setAmount(''); setDestRut(''); setDestAccount(''); setDestName(''); setDestEmail(''); setDestBankUrl(''); setIsExternalBank(false);
+                  setActiveModal(null); fetchData(); setAmount(''); setDestRut(''); setDestAccount(''); setDestName(''); setDestEmail(''); setDestBankUrl(''); setDestApiKey(''); setIsExternalBank(false);
                 } catch (err) { alert(err.response?.data?.error || err.response?.data?.message || err.message || 'Fallo en la transacción'); } finally { setOpLoading(false); }
               }}>
                 {activeModal === 'transfer' && (
@@ -396,7 +406,10 @@ const Dashboard = () => {
                       {isExternalBank && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginBottom: '20px' }}>
                           <p className="stat-label">URL DEL BANCO DESTINO (API DEL PROFESOR)</p>
-                          <input type="url" placeholder="https://banco-profesor.vercel.app/api/webhook" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destBankUrl} onChange={(e) => setDestBankUrl(e.target.value)} required={isExternalBank} />
+                          <input type="url" placeholder="https://banco-profesor.vercel.app/api/webhook" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px', marginBottom: '15px' }} value={destBankUrl} onChange={(e) => setDestBankUrl(e.target.value)} required={isExternalBank} />
+                          
+                          <p className="stat-label">API KEY DEL BANCO DESTINO (OPCIONAL)</p>
+                          <input type="text" placeholder="Ej: PROFESOR-KEY-2026" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.3)', padding: '20px', color: '#d4af37' }} value={destApiKey} onChange={(e) => setDestApiKey(e.target.value)} />
                         </motion.div>
                       )}
                     </AnimatePresence>

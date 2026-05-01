@@ -203,7 +203,13 @@ exports.deposit = asyncHandler(async (req, res) => {
  * Abono externo (Transferencia desde banco del profesor u otro banco)
  */
 exports.externalDeposit = asyncHandler(async (req, res) => {
-    const { amount, destination, origin_bank = 'Banco Externo', description = 'Transferencia interbancaria' } = req.body;
+    const { amount, destination, origin_bank = 'Banco Externo', description = 'Transferencia interbancaria', api_key } = req.body;
+
+    // Validación de API Key
+    const providedKey = req.headers['x-api-key'] || req.headers['api-key'] || api_key || (req.headers.authorization && req.headers.authorization.replace('Bearer ', '').trim());
+    if (providedKey !== 'GOLD-BANK-KEY-2026') {
+        throw new ApiError(401, 'API Key de Banco no válida o no proporcionada. Se requiere GOLD-BANK-KEY-2026');
+    }
 
     if (!amount || amount <= 0) throw new ApiError(400, 'Monto inválido');
     if (!destination) throw new ApiError(400, 'Destino (RUT o N° de Cuenta) es requerido');

@@ -5,7 +5,7 @@ const { asyncHandler, ApiError } = require('../utils/errors');
  * Transferencia entre cuentas
  */
 exports.transfer = asyncHandler(async (req, res) => {
-    const { amount, destination, description, destination_bank_url } = req.body;
+    const { amount, destination, description, destination_bank_url, receiver_name, receiver_rut, receiver_email } = req.body;
     const userId = req.user.id;
 
     if (amount <= 0) throw new ApiError(400, 'El monto debe ser superior a 0');
@@ -38,7 +38,10 @@ exports.transfer = asyncHandler(async (req, res) => {
                     destination,
                     amount,
                     origin_bank: 'Gold Bank',
-                    description: description || `Transferencia de ${senderAcc.profiles.full_name}`
+                    description: description || `Transferencia de ${senderAcc.profiles.full_name}`,
+                    receiver_name,
+                    receiver_rut,
+                    receiver_email
                 })
             });
 

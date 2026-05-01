@@ -63,6 +63,9 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'accounts', 'cards', 'audit'
   const [amount, setAmount] = useState('');
   const [destRut, setDestRut] = useState('');
+  const [destAccount, setDestAccount] = useState('');
+  const [destName, setDestName] = useState('');
+  const [destEmail, setDestEmail] = useState('');
   const [destBankUrl, setDestBankUrl] = useState('');
   const [isExternalBank, setIsExternalBank] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
@@ -345,7 +348,14 @@ const Dashboard = () => {
                   const apiURL = import.meta.env.VITE_API_URL || '';
                   const config = { headers: { Authorization: `Bearer ${token}` } };
                   if (activeModal === 'transfer') {
-                    const payload = { destination: destRut, amount: parseFloat(amount), description: 'Transferencia Elite' };
+                    const payload = { 
+                      destination: destAccount || destRut, 
+                      amount: parseFloat(amount), 
+                      description: 'Transferencia Elite',
+                      receiver_name: destName,
+                      receiver_rut: destRut,
+                      receiver_email: destEmail
+                    };
                     if (isExternalBank && destBankUrl) {
                       payload.destination_bank_url = destBankUrl;
                     }
@@ -353,14 +363,28 @@ const Dashboard = () => {
                   } else {
                     await axios.post(`${apiURL}/api/transactions/deposit`, { amount: parseFloat(amount) }, config);
                   }
-                  setActiveModal(null); fetchData(); setAmount(''); setDestRut(''); setDestBankUrl(''); setIsExternalBank(false);
+                  setActiveModal(null); fetchData(); setAmount(''); setDestRut(''); setDestAccount(''); setDestName(''); setDestEmail(''); setDestBankUrl(''); setIsExternalBank(false);
                 } catch (err) { alert(err.response?.data?.error || err.response?.data?.message || err.message || 'Fallo en la transacción'); } finally { setOpLoading(false); }
               }}>
                 {activeModal === 'transfer' && (
                   <>
-                    <div style={{ marginBottom: '20px' }}>
-                      <p className="stat-label">RUT DESTINATARIO O N° DE CUENTA</p>
-                      <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '20px' }} value={destRut} onChange={(e) => setDestRut(formatRut(e.target.value))} required maxLength="12" />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                      <div>
+                        <p className="stat-label">RUT DESTINATARIO</p>
+                        <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '15px' }} value={destRut} onChange={(e) => setDestRut(formatRut(e.target.value))} required maxLength="12" />
+                      </div>
+                      <div>
+                        <p className="stat-label">NÚMERO DE CUENTA</p>
+                        <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '15px' }} value={destAccount} onChange={(e) => setDestAccount(e.target.value)} required />
+                      </div>
+                      <div>
+                        <p className="stat-label">NOMBRE COMPLETO</p>
+                        <input type="text" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '15px' }} value={destName} onChange={(e) => setDestName(e.target.value)} required />
+                      </div>
+                      <div>
+                        <p className="stat-label">CORREO ELECTRÓNICO</p>
+                        <input type="email" className="btn-ghost" style={{ width: '100%', textAlign: 'left', background: 'rgba(255,255,255,0.02)', padding: '15px' }} value={destEmail} onChange={(e) => setDestEmail(e.target.value)} required />
+                      </div>
                     </div>
                     
                     <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>

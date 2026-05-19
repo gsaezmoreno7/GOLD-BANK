@@ -46,18 +46,21 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routes
-const models = [
-  'empresa', 'usuario', 'cliente', 'maquina', 'ordentrabajo', 
-  'evidenciafotografica', 'itemreparacion', 'material', 
-  'materialusado', 'presupuesto', 'pago', 'factura', 'gasto',
-  'impuesto'
-];
-
 app.use('/api/auth', require('./routes/auth'));
-
-models.forEach(model => {
-  app.use(`/api/${model}`, require(`./routes/${model}`));
-});
+app.use('/api/empresa', require('./routes/empresa'));
+app.use('/api/usuario', require('./routes/usuario'));
+app.use('/api/cliente', require('./routes/cliente'));
+app.use('/api/maquina', require('./routes/maquina'));
+app.use('/api/ordentrabajo', require('./routes/ordentrabajo'));
+app.use('/api/evidenciafotografica', require('./routes/evidenciafotografica'));
+app.use('/api/itemreparacion', require('./routes/itemreparacion'));
+app.use('/api/material', require('./routes/material'));
+app.use('/api/materialusado', require('./routes/materialusado'));
+app.use('/api/presupuesto', require('./routes/presupuesto'));
+app.use('/api/pago', require('./routes/pago'));
+app.use('/api/factura', require('./routes/factura'));
+app.use('/api/gasto', require('./routes/gasto'));
+app.use('/api/impuesto', require('./routes/impuesto'));
 
 // Error handling
 app.use((err, req, res, next) => {

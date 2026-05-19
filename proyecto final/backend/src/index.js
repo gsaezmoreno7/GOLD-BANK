@@ -65,7 +65,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Ocurrió un error en el servidor', detail: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Documentación Swagger en http://localhost:${PORT}/api-docs`);
-});
+// Exportar la app para Vercel Serverless
+module.exports = app;
+
+// Solo iniciar el servidor si no estamos en Vercel
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Documentación Swagger en http://localhost:${PORT}/api-docs`);
+  });
+}

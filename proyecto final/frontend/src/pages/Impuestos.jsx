@@ -48,7 +48,7 @@ export default function Impuestos({ user }) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3001/api/impuesto/proyeccion?mes=${mes}&anio=${anio}`, {
+      const res = await axios.get(`/api/impuesto/proyeccion?mes=${mes}&anio=${anio}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data);
@@ -83,7 +83,7 @@ export default function Impuestos({ user }) {
         afecto_iva: false
       };
 
-      await axios.post('http://localhost:3001/api/gasto', payload, {
+      await axios.post('/api/gasto', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

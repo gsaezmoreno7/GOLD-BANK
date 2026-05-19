@@ -21,7 +21,7 @@ export default function Materiales({ user }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3001/api/material', {
+      await axios.post('/api/material', {
         nombre: formData.nombre,
         tipo: formData.tipo,
         unidad_medida: formData.unidad_medida,
@@ -52,7 +52,7 @@ export default function Materiales({ user }) {
   const fetchMateriales = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/material', {
+      const res = await axios.get('/api/material', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMateriales(res.data);

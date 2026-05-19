@@ -28,7 +28,7 @@ export default function Facturas({ user }) {
   const fetchOrdenes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/ordentrabajo', {
+      const res = await axios.get('/api/ordentrabajo', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrdenes(res.data);
@@ -40,7 +40,7 @@ export default function Facturas({ user }) {
   const fetchFacturas = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/factura', {
+      const res = await axios.get('/api/factura', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFacturas(res.data);
@@ -91,7 +91,7 @@ export default function Facturas({ user }) {
         items: items
       };
 
-      await axios.post('http://localhost:3001/api/factura', payload, {
+      await axios.post('/api/factura', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

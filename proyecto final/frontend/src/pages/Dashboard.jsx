@@ -27,10 +27,10 @@ export default function Dashboard({ user }) {
 
       // Fetch all needed resources
       const [resOrdenes, resClientes, resFacturas, resGastos] = await Promise.all([
-        axios.get('http://localhost:3001/api/ordentrabajo', { headers }),
-        axios.get('http://localhost:3001/api/cliente', { headers }),
-        axios.get('http://localhost:3001/api/factura', { headers }),
-        axios.get('http://localhost:3001/api/gasto', { headers })
+        axios.get('/api/ordentrabajo', { headers }),
+        axios.get('/api/cliente', { headers }),
+        axios.get('/api/factura', { headers }),
+        axios.get('/api/gasto', { headers })
       ]);
 
       const ordenes = resOrdenes.data;

@@ -34,7 +34,7 @@ export default function Ordenes({ user }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3001/api/ordentrabajo', 
+      await axios.post('/api/ordentrabajo', 
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -62,7 +62,7 @@ export default function Ordenes({ user }) {
   const fetchClientes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/cliente', {
+      const res = await axios.get('/api/cliente', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClientes(res.data);
@@ -74,7 +74,7 @@ export default function Ordenes({ user }) {
   const fetchOrdenes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/ordentrabajo', {
+      const res = await axios.get('/api/ordentrabajo', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrdenes(res.data);
@@ -107,7 +107,7 @@ export default function Ordenes({ user }) {
       formDataUpload.append('id_orden', selectedOrden.id_orden);
       formDataUpload.append('descripcion', fotoDescripcion || 'Evidencia');
 
-      const res = await axios.post('http://localhost:3001/api/evidenciafotografica/upload', 
+      const res = await axios.post('/api/evidenciafotografica/upload', 
         formDataUpload,
         {
           headers: { 

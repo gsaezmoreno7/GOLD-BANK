@@ -27,7 +27,7 @@ export default function Gastos({ user }) {
   const fetchGastos = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/gasto', {
+      const res = await axios.get('/api/gasto', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGastos(res.data);
@@ -45,8 +45,8 @@ export default function Gastos({ user }) {
     try {
       const token = localStorage.getItem('token');
       const url = editingGasto 
-        ? `http://localhost:3001/api/gasto/${editingGasto.id_gasto}` 
-        : 'http://localhost:3001/api/gasto';
+        ? `/api/gasto/${editingGasto.id_gasto}` 
+        : '/api/gasto';
       
       const payload = {
         descripcion: formData.descripcion,
@@ -103,7 +103,7 @@ export default function Gastos({ user }) {
     if (!window.confirm('¿Está seguro de que desea eliminar este gasto?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3001/api/gasto/${id}`, {
+      await axios.delete(`/api/gasto/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchGastos();

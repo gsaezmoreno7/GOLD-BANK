@@ -24,7 +24,7 @@ export default function Clientes({ user }) {
   const fetchClientes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/cliente', {
+      const res = await axios.get('/api/cliente', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClientes(res.data);
@@ -53,7 +53,7 @@ export default function Clientes({ user }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3001/api/cliente', 
+      await axios.post('/api/cliente', 
         { ...formData, id_empresa: user.id_empresa },
         { headers: { Authorization: `Bearer ${token}` } }
       );

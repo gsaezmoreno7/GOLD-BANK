@@ -20,7 +20,7 @@ export default function Perfil({ user, onUpdateUser }) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put('http://localhost:3001/api/auth/perfil', 
+      const res = await axios.put('/api/auth/perfil', 
         { correo, nuevaContrasena },
         { headers: { Authorization: `Bearer ${token}` } }
       );

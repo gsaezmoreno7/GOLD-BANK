@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id_empresa Int      @id @default(autoincrement())
+  nombre     String
+  rut        String   @unique
+  direccion  String?
+  telefono   String?
+  correo     String?
+  logo_url   String?
+  usuarios   Usuario[]
+  clientes   Cliente[]
+  ordenes    OrdenTrabajo[]
+  gastos     Gasto[]
+}
+
+model Usuario {
+  id_usuario    Int      @id @default(autoincrement())
+  id_empresa    Int
+  empresa       Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  nombre        String
+  correo        String   @unique
+  contrasena_hash String
+  rol           String   // ADMIN, ADMINISTRATIVO, TECNICO
+  estado        String   @default("ACTIVO") // ACTIVO, INACTIVO
+  ordenes_asignadas OrdenTrabajo[] @relation("TecnicoAsignado")
+}
+
+model Cliente {
+  id_cliente    Int      @id @default(autoincrement())
+  id_empresa    Int
+  empresa       Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  nombre        String
+  rut           String   @unique
+  telefono      String?
+  direccion     String?
+  correo        String?
+  observaciones String?
+  maquinas      Maquina[]
+  ordenes       OrdenTrabajo[]
+}
+
+model Maquina {
+  id_maquina    Int      @id @default(autoincrement())
+  id_cliente    Int
+  cliente       Cliente  @relation(fields: [id_cliente], references: [id_cliente])
+  tipo_maquina  String
+  marca         String?
+  modelo        String?
+  numero_serie  String?
+  observaciones String?
+  ordenes       OrdenTrabajo[]
+}
+
+model OrdenTrabajo {
+  id_orden      Int      @id @default(autoincrement())
+  id_empresa    Int
+  empresa       Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  id_cliente    Int
+  cliente       Cliente  @relation(fields: [id_cliente], references: [id_cliente])
+  id_maquina    Int
+  maquina       Maquina  @relation(fields: [id_maquina], references: [id_maquina])
+  tecnico_asignado Int?
+  tecnico       Usuario?  @relation("TecnicoAsignado", fields: [tecnico_asignado], references: [id_usuario])
+  fecha_ingreso DateTime @default(now())
+  descripcion_inicial String
+  diagnostico   String?
+  estado        String   @default("INGRESADA") // INGRESADA, EN_DIAGNOSTICO, EN_REPARACION, FINALIZADA, ENTREGADA
+  prioridad     String   @default("MEDIA") // BAJA, MEDIA, ALTA
+  evidencias    EvidenciaFotografica[]
+  items         ItemReparacion[]
+  materiales_usados MaterialUsado[]
+  presupuestos  Presupuesto[]
+}
+
+model EvidenciaFotografica {
+  id_foto       Int      @id @default(autoincrement())
+  id_orden      Int
+  orden         OrdenTrabajo @relation(fields: [id_orden], references: [id_orden])
+  url_imagen    String
+  descripcion   String?
+  fecha_subida  DateTime @default(now())
+}
+
+model ItemReparacion {
+  id_item       Int      @id @default(autoincrement())
+  id_orden      Int
+  orden         OrdenTrabajo @relation(fields: [id_orden], references: [id_orden])
+  descripcion_problema String
+  trabajo_a_realizar String?
+  estado        String   @default("PENDIENTE") // PENDIENTE, EN_PROCESO, TERMINADO
+}
+
+model Material {
+  id_material   Int      @id @default(autoincrement())
+  nombre        String
+  tipo          String?
+  unidad_medida String?
+  precio_referencia Float @default(0)
+  materiales_usados MaterialUsado[]
+}
+
+model MaterialUsado {
+  id_material_usado Int      @id @default(autoincrement())
+  id_orden      Int
+  orden         OrdenTrabajo @relation(fields: [id_orden], references: [id_orden])
+  id_material   Int
+  material      Material @relation(fields: [id_material], references: [id_material])
+  cantidad      Float
+  costo_real    Float
+}
+
+model Presupuesto {
+  id_presupuesto Int      @id @default(autoincrement())
+  id_orden      Int
+  orden         OrdenTrabajo @relation(fields: [id_orden], references: [id_orden])
+  numero_presupuesto String @unique
+  fecha         DateTime @default(now())
+  total_final_iva_incluido Float
+  anticipo_requerido Float @default(0)
+  saldo_pendiente Float
+  estado        String   @default("PENDIENTE") // PENDIENTE, APROBADO, RECHAZADO
+  pagos         Pago[]
+  facturas      Factura[]
+}
+
+model Pago {
+  id_pago       Int      @id @default(autoincrement())
+  id_presupuesto Int
+  presupuesto   Presupuesto @relation(fields: [id_presupuesto], references: [id_presupuesto])
+  fecha_pago    DateTime @default(now())
+  monto         Float
+  metodo_pago   String
+  comprobante_url String?
+}
+
+model Factura {
+  id_factura    Int      @id @default(autoincrement())
+  id_presupuesto Int
+  presupuesto   Presupuesto @relation(fields: [id_presupuesto], references: [id_presupuesto])
+  numero_factura String  @unique
+  fecha_emision DateTime @default(now())
+  total_facturado Float
+  estado        String   @default("EMITIDA") // EMITIDA, PAGADA, ANULADA
+}
+
+model Gasto {
+  id_gasto    Int      @id @default(autoincrement())
+  id_empresa  Int
+  empresa     Empresa  @relation(fields: [id_empresa], references: [id_empresa])
+  descripcion String
+  monto       Float
+  fecha       DateTime @default(now())
+  categoria   String   // INSUMOS, REPUESTOS, SERVICIOS, HERRAMIENTAS, OTROS
+  tipo_documento String? @default("FACTURA")
+  afecto_iva  Boolean? @default(true)
+}

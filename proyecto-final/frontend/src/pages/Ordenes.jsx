@@ -25,6 +25,115 @@ export default function Ordenes({ user }) {
     prioridad: 'MEDIA'
   });
 
+  // Edit Order State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingOrden, setEditingOrden] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    prioridad: 'MEDIA',
+    estado: 'INGRESADA',
+    descripcion_inicial: '',
+    diagnostico: ''
+  });
+
+  // Presupuesto State
+  const [createPresupuestoModalOpen, setCreatePresupuestoModalOpen] = useState(false);
+  const [viewPresupuestoModalOpen, setViewPresupuestoModalOpen] = useState(false);
+  const [presupuestoTotal, setPresupuestoTotal] = useState('');
+  const [presupuestoAnticipo, setPresupuestoAnticipo] = useState('');
+  const [generatingPresupuesto, setGeneratingPresupuesto] = useState(false);
+
+  const handleOpenEdit = (orden) => {
+    setEditingOrden(orden);
+    setEditFormData({
+      prioridad: orden.prioridad,
+      estado: orden.estado,
+      descripcion_inicial: orden.descripcion_inicial || '',
+      diagnostico: orden.diagnostico || ''
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/ordentrabajo/${editingOrden.id_orden}`, editFormData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEditModalOpen(false);
+      fetchOrdenes();
+      alert('Orden de trabajo actualizada con éxito.');
+    } catch (error) {
+      console.error('Error al actualizar orden:', error);
+      alert('Hubo un error al actualizar la orden.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePresupuestoClick = (orden) => {
+    setSelectedOrden(orden);
+    if (orden.presupuestos && orden.presupuestos.length > 0) {
+      setViewPresupuestoModalOpen(true);
+    } else {
+      setPresupuestoTotal('');
+      setPresupuestoAnticipo('');
+      setCreatePresupuestoModalOpen(true);
+    }
+  };
+
+  const handleCreatePresupuestoSubmit = async (e) => {
+    e.preventDefault();
+    if (!presupuestoTotal) return;
+    setGeneratingPresupuesto(true);
+    try {
+      const token = localStorage.getItem('token');
+      const total = parseFloat(presupuestoTotal);
+      const anticipo = parseFloat(presupuestoAnticipo || 0);
+      const payload = {
+        id_orden: selectedOrden.id_orden,
+        numero_presupuesto: `PRE-${Date.now()}`,
+        total_final_iva_incluido: total,
+        anticipo_requerido: anticipo,
+        saldo_pendiente: total - anticipo,
+        estado: 'APROBADO'
+      };
+
+      await axios.post('/api/presupuesto', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert('Presupuesto técnico generado y aprobado exitosamente.');
+      setCreatePresupuestoModalOpen(false);
+      fetchOrdenes();
+    } catch (error) {
+      console.error('Error al generar presupuesto:', error);
+      alert('Hubo un error al generar el presupuesto.');
+    } finally {
+      setGeneratingPresupuesto(false);
+    }
+  };
+
+  const handleDownloadPresupuestoPDF = async (presupuestoId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`/api/presupuesto/${presupuestoId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `presupuesto_${presupuestoId}.pdf`;
+      link.click();
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
+      alert('Hubo un error al generar y descargar el PDF.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.id_cliente) {
@@ -225,8 +334,12 @@ export default function Ordenes({ user }) {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" title="Gestionar Orden">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleOpenEdit(o)}
+                          className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="Gestionar Orden"
+                        >
                           <Edit2 size={18} />
                         </button>
                         <button 
@@ -237,7 +350,11 @@ export default function Ordenes({ user }) {
                           <Camera size={18} />
                         </button>
                         {(user.rol !== 'TECNICO') && (
-                          <button className="text-corporativoRojo hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Generar Presupuesto">
+                          <button 
+                            onClick={() => handlePresupuestoClick(o)}
+                            className="text-corporativoRojo hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                            title={o.presupuestos && o.presupuestos.length > 0 ? "Ver Presupuesto" : "Generar Presupuesto"}
+                          >
                             <FileText size={18} />
                           </button>
                         )}
@@ -437,7 +554,183 @@ export default function Ordenes({ user }) {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Modal Editar Orden */}
+      {editModalOpen && editingOrden && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900">Gestionar Orden de Trabajo #{editingOrden.id_orden}</h3>
+              <button onClick={() => setEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción Inicial (Falla)</label>
+                  <textarea 
+                    rows="3" 
+                    required
+                    value={editFormData.descripcion_inicial}
+                    onChange={(e) => setEditFormData({ ...editFormData, descripcion_inicial: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all" 
+                  ></textarea>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Diagnóstico Técnico</label>
+                  <textarea 
+                    rows="3" 
+                    placeholder="Ingrese detalles del diagnóstico técnico y reparaciones..."
+                    value={editFormData.diagnostico}
+                    onChange={(e) => setEditFormData({ ...editFormData, diagnostico: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all" 
+                  ></textarea>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                    <select 
+                      value={editFormData.estado}
+                      onChange={(e) => setEditFormData({ ...editFormData, estado: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all"
+                    >
+                      <option value="INGRESADA">Ingresada</option>
+                      <option value="EN_DIAGNOSTICO">En Diagnóstico</option>
+                      <option value="EN_REPARACION">En Reparación</option>
+                      <option value="FINALIZADA">Finalizada</option>
+                      <option value="ENTREGADA">Entregada</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
+                    <select 
+                      value={editFormData.prioridad}
+                      onChange={(e) => setEditFormData({ ...editFormData, prioridad: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all"
+                    >
+                      <option value="BAJA">Baja</option>
+                      <option value="MEDIA">Media</option>
+                      <option value="ALTA">Alta</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
+                <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoAzul text-white font-medium rounded-lg hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-75">
+                  {saving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Generar Presupuesto */}
+      {createPresupuestoModalOpen && selectedOrden && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900">Generar Presupuesto - Orden #{selectedOrden.id_orden}</h3>
+              <button onClick={() => setCreatePresupuestoModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleCreatePresupuestoSubmit}>
+              <div className="p-6 space-y-4">
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-sm text-blue-800">
+                  <p className="font-bold">Máquina: {selectedOrden.maquina?.tipo_maquina}</p>
+                  <p className="mt-1">Cliente: {selectedOrden.cliente?.nombre}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Monto Total Presupuestado ($ IVA Incluido)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min="1"
+                    value={presupuestoTotal}
+                    onChange={(e) => setPresupuestoTotal(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none text-sm font-bold" 
+                    placeholder="Ej. 150000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Anticipo Requerido ($ - Opcional)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={presupuestoAnticipo}
+                    onChange={(e) => setPresupuestoAnticipo(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none text-sm" 
+                    placeholder="Ej. 50000"
+                  />
+                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
+                <button type="button" onClick={() => setCreatePresupuestoModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={generatingPresupuesto} className="px-4 py-2 bg-corporativoRojo text-white font-medium rounded-lg hover:bg-red-800 transition-colors shadow-sm disabled:opacity-75">
+                  {generatingPresupuesto ? 'Generando...' : 'Generar y Aprobar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ver Presupuesto */}
+      {viewPresupuestoModalOpen && selectedOrden && selectedOrden.presupuestos && selectedOrden.presupuestos.length > 0 && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900">Detalle del Presupuesto - Orden #{selectedOrden.id_orden}</h3>
+              <button onClick={() => setViewPresupuestoModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 font-medium">N° Presupuesto:</span>
+                  <span className="text-sm font-bold text-gray-800">{selectedOrden.presupuestos[0].numero_presupuesto}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 font-medium">Fecha Emisión:</span>
+                  <span className="text-sm font-medium text-gray-800">{new Date(selectedOrden.presupuestos[0].fecha).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-sm text-gray-500 font-medium">Total (IVA Incluido):</span>
+                  <span className="text-sm font-bold text-corporativoRojo">${selectedOrden.presupuestos[0].total_final_iva_incluido.toLocaleString('es-CL')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 font-medium">Anticipo Solicitado:</span>
+                  <span className="text-sm font-bold text-gray-800">${selectedOrden.presupuestos[0].anticipo_requerido.toLocaleString('es-CL')}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2">
+                  <span className="text-sm text-gray-500 font-semibold">Saldo Pendiente:</span>
+                  <span className="text-sm font-bold text-blue-900">${selectedOrden.presupuestos[0].saldo_pendiente.toLocaleString('es-CL')}</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => handleDownloadPresupuestoPDF(selectedOrden.presupuestos[0].id_presupuesto)}
+                className="w-full bg-corporativoAzul text-white font-medium py-2.5 rounded-xl hover:bg-blue-900 transition-colors shadow-sm flex items-center justify-center"
+              >
+                <FileText size={18} className="mr-2" />
+                Descargar Documento PDF Oficial
+              </button>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button onClick={() => setViewPresupuestoModalOpen(false)} className="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors">
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

@@ -57,7 +57,50 @@ router.get('/:id', verifyToken, controller.getById);
  */
 router.post('/', verifyToken, controller.create);
 
+/**
+ * @swagger
+ * /api/factura/{id}:
+ *   put:
+ *     summary: Actualizar Factura por ID
+ *     tags: [Factura]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Factura actualizada exitosamente
+ */
 router.put('/:id', verifyToken, controller.update);
+
+/**
+ * @swagger
+ * /api/factura/{id}:
+ *   delete:
+ *     summary: Eliminar Factura por ID
+ *     tags: [Factura]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Factura eliminada exitosamente
+ */
 router.delete('/:id', verifyToken, controller.delete);
 
 module.exports = router;

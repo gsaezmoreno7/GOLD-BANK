@@ -129,7 +129,7 @@ export default function Clientes({ user }) {
                     <td className="p-4 text-gray-600">{c.telefono || 'N/A'}</td>
                     <td className="p-4 text-gray-600">{c.correo || 'N/A'}</td>
                     <td className="p-4">
-                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex space-x-2">
                         <button className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
                           <Edit2 size={18} />
                         </button>

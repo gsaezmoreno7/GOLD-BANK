@@ -20,9 +20,14 @@ exports.generatePresupuestoPDF = async (presupuesto, orden, cliente, empresa, ou
       }
 
       // Header
-      doc.fillColor(colorAzul).fontSize(20).text(empresa.nombre, { align: 'right' });
-      doc.fontSize(10).fillColor('black').text(empresa.direccion, { align: 'right' });
-      doc.text(`RUT: ${empresa.rut} | Tel: ${empresa.telefono}`, { align: 'right' });
+      const nombreEmpresa = (orden && orden.empresa) ? orden.empresa.nombre : 'Maestranza R.S SPA';
+      const direccionEmpresa = (orden && orden.empresa) ? (orden.empresa.direccion || 'Sector Industrial, Los Ángeles') : 'Sector Industrial, Los Ángeles';
+      const rutEmpresa = (orden && orden.empresa) ? orden.empresa.rut : '76.123.456-K';
+      const telefonoEmpresa = (orden && orden.empresa) ? (orden.empresa.telefono || '+56 9 1234 5678') : '+56 9 1234 5678';
+
+      doc.fillColor(colorAzul).fontSize(20).text(nombreEmpresa, { align: 'right' });
+      doc.fontSize(10).fillColor('black').text(direccionEmpresa, { align: 'right' });
+      doc.text(`RUT: ${rutEmpresa} | Tel: ${telefonoEmpresa}`, { align: 'right' });
       doc.moveDown();
 
       doc.fillColor(colorRojo).fontSize(16).text('PRESUPUESTO TÉCNICO', { align: 'center' });
@@ -31,19 +36,28 @@ exports.generatePresupuestoPDF = async (presupuesto, orden, cliente, empresa, ou
       doc.moveDown();
 
       // Datos Cliente
+      const nombreCliente = cliente ? cliente.nombre : 'Consumidor Final';
+      const rutCliente = cliente ? cliente.rut : 'S/R';
+      const telefonoCliente = cliente ? (cliente.telefono || 'N/A') : 'N/A';
+
       doc.fontSize(12).fillColor(colorAzul).text('Datos del Cliente', { underline: true });
       doc.fillColor('black').fontSize(10);
-      doc.text(`Nombre: ${cliente.nombre}`);
-      doc.text(`RUT: ${cliente.rut}`);
-      doc.text(`Teléfono: ${cliente.telefono || 'N/A'}`);
+      doc.text(`Nombre: ${nombreCliente}`);
+      doc.text(`RUT: ${rutCliente}`);
+      doc.text(`Teléfono: ${telefonoCliente}`);
       doc.moveDown();
 
       // Datos Máquina
+      const tipoMaquina = (orden && orden.maquina) ? orden.maquina.tipo_maquina : 'Equipo de Reparación';
+      const marcaMaquina = (orden && orden.maquina) ? (orden.maquina.marca || '') : '';
+      const modeloMaquina = (orden && orden.maquina) ? (orden.maquina.modelo || '') : '';
+      const diagnosticoOrden = (orden && orden.diagnostico) ? orden.diagnostico : 'Diagnóstico inicial en proceso';
+
       doc.fontSize(12).fillColor(colorAzul).text('Datos de la Máquina', { underline: true });
       doc.fillColor('black').fontSize(10);
-      doc.text(`Tipo: ${orden.maquina.tipo_maquina}`);
-      doc.text(`Marca/Modelo: ${orden.maquina.marca || ''} ${orden.maquina.modelo || ''}`);
-      doc.text(`Diagnóstico: ${orden.diagnostico || 'Pendiente'}`);
+      doc.text(`Tipo: ${tipoMaquina}`);
+      doc.text(`Marca/Modelo: ${marcaMaquina} ${modeloMaquina}`);
+      doc.text(`Diagnóstico: ${diagnosticoOrden}`);
       doc.moveDown();
 
       // Tabla Económica Resumen

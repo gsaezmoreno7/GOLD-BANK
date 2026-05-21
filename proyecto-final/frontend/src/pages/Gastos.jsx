@@ -284,7 +284,7 @@ export default function Gastos({ user }) {
                       </td>
                     <td className="p-4">
                       {(user.rol === 'ADMIN' || user.rol === 'ADMINISTRATIVO') && (
-                        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex space-x-2">
                           <button 
                             onClick={() => handleEdit(g)}
                             className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
@@ -408,7 +408,7 @@ export default function Gastos({ user }) {
                     </select>
                   </div>
 
-                  <div className="flex items-center pt-6">
+                  <div className="flex flex-col justify-center pt-2">
                     <label className="flex items-center space-x-2.5 cursor-pointer select-none">
                       <input 
                         type="checkbox"
@@ -418,8 +418,34 @@ export default function Gastos({ user }) {
                       />
                       <span className="text-sm font-semibold text-gray-700">¿Afecto a IVA Crédito?</span>
                     </label>
+                    <p className="text-[11px] text-gray-500 mt-1 leading-normal">
+                      Si se selecciona, el sistema calculará un 19% de IVA Crédito Fiscal a partir del monto total ingresado (monto neto = total / 1.19), descontándose de sus impuestos mensuales.
+                    </p>
                   </div>
                 </div>
+
+                {/* Real-time tax breakdown card */}
+                {formData.monto && parseFloat(formData.monto) > 0 && (
+                  <div className="bg-gray-50 border border-gray-150 rounded-xl p-3.5 space-y-1.5 animate-fade-in text-xs">
+                    <span className="font-bold text-gray-700 uppercase tracking-wider block mb-1">Previsualización de Impuestos (19% IVA)</span>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Monto Neto (Base imponible):</span>
+                      <span className="font-semibold">${(formData.afecto_iva ? Math.round(parseFloat(formData.monto) / 1.19) : parseFloat(formData.monto)).toLocaleString('es-CL')}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>IVA Crédito Fiscal (19%):</span>
+                      <span className="font-semibold text-emerald-700">
+                        {formData.afecto_iva 
+                          ? `+$${Math.round(parseFloat(formData.monto) - (parseFloat(formData.monto) / 1.19)).toLocaleString('es-CL')}` 
+                          : '$0 (Exento)'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t pt-1.5 font-bold text-gray-800 text-sm">
+                      <span>Monto Total del Gasto:</span>
+                      <span className="text-corporativoRojo">${parseFloat(formData.monto).toLocaleString('es-CL')}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">

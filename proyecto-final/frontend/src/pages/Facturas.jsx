@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Download, FileText, CheckCircle, PlusCircle, Building, ShieldCheck } from 'lucide-react';
+import { Search, Download, FileText, CheckCircle, PlusCircle, Building, ShieldCheck, Trash2, X } from 'lucide-react';
 
 export default function Facturas({ user }) {
   const [facturas, setFacturas] = useState([]);
@@ -8,6 +8,8 @@ export default function Facturas({ user }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewingFactura, setViewingFactura] = useState(null);
 
   // Form states
   const [selectedOrden, setSelectedOrden] = useState('');
@@ -115,6 +117,61 @@ export default function Facturas({ user }) {
     }
   };
 
+  const handleMarkAsPaid = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea marcar esta factura como PAGADA?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/factura/${id}`, { estado: 'PAGADA' }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Factura marcada como pagada.');
+      fetchFacturas();
+    } catch (error) {
+      console.error('Error marking invoice as paid:', error);
+      alert('Hubo un error al actualizar la factura.');
+    }
+  };
+
+  const handleDeleteFactura = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar permanentemente esta factura?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/factura/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Factura eliminada correctamente.');
+      fetchFacturas();
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      alert('Hubo un error al intentar eliminar la factura.');
+    }
+  };
+
+  const handleDownloadPDF = async (idPresupuesto) => {
+    if (!idPresupuesto) {
+      alert("No hay un presupuesto asociado a esta factura.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`/api/presupuesto/${idPresupuesto}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Presupuesto-${idPresupuesto}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      alert('Hubo un error al descargar el archivo PDF.');
+    }
+  };
+
   const getStatusColor = (estado) => {
     switch(estado) {
       case 'EMITIDA': return 'bg-blue-100 text-blue-800';
@@ -123,6 +180,18 @@ export default function Facturas({ user }) {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const filteredFacturas = facturas.filter((f) => {
+    const term = searchTerm.toLowerCase();
+    const matchesNumero = f.numero_factura ? f.numero_factura.toLowerCase().includes(term) : false;
+    const matchesRut = f.presupuesto?.orden?.cliente?.rut 
+      ? f.presupuesto.orden.cliente.rut.toLowerCase().includes(term) 
+      : false;
+    const matchesCliente = f.presupuesto?.orden?.cliente?.nombre 
+      ? f.presupuesto.orden.cliente.nombre.toLowerCase().includes(term) 
+      : false;
+    return matchesNumero || matchesRut || matchesCliente;
+  });
 
   if (user.rol === 'TECNICO') {
     return (
@@ -152,11 +221,13 @@ export default function Facturas({ user }) {
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div className="relative w-72">
+          <div className="relative w-80">
             <input 
               type="text" 
-              placeholder="Buscar por N° Factura o RUT..." 
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-corporativoAzul/20 focus:border-corporativoAzul transition-all"
+              placeholder="Buscar por N° Factura, RUT o Cliente..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-corporativoAzul/20 focus:border-corporativoAzul transition-all text-sm outline-none"
             />
             <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
@@ -167,6 +238,7 @@ export default function Facturas({ user }) {
             <thead>
               <tr className="bg-white text-gray-500 text-sm uppercase tracking-wider">
                 <th className="p-4 font-semibold border-b border-gray-100">N° Factura</th>
+                <th className="p-4 font-semibold border-b border-gray-100">Cliente / Receptor</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Fecha Emisión</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Total Facturado</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Estado</th>
@@ -175,14 +247,22 @@ export default function Facturas({ user }) {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500">Cargando facturas...</td></tr>
-              ) : facturas.length === 0 ? (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500 font-medium">No hay facturas emitidas en el sistema</td></tr>
+                <tr><td colSpan="6" className="p-8 text-center text-gray-500">Cargando facturas...</td></tr>
+              ) : filteredFacturas.length === 0 ? (
+                <tr><td colSpan="6" className="p-8 text-center text-gray-500 font-medium">No se encontraron facturas en el sistema</td></tr>
               ) : (
-                facturas.map((f) => (
+                filteredFacturas.map((f) => (
                   <tr key={f.id_factura} className="hover:bg-gray-50/80 transition-colors group">
                     <td className="p-4 font-bold text-corporativoAzul">F-{f.numero_factura}</td>
-                    <td className="p-4 text-gray-600">{new Date(f.fecha_emision).toLocaleDateString()}</td>
+                    <td className="p-4 text-gray-700">
+                      <div className="font-semibold text-gray-900">
+                        {f.presupuesto?.orden?.cliente?.nombre || 'Consumidor General'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {f.presupuesto?.orden?.cliente?.rut || 'S/R'}
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-600">{new Date(f.fecha_emision).toLocaleDateString('es-CL')}</td>
                     <td className="p-4 font-bold text-gray-900">${f.total_facturado.toLocaleString('es-CL')}</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(f.estado)}`}>
@@ -190,15 +270,36 @@ export default function Facturas({ user }) {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" title="Ver Detalle DTE">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => setViewingFactura(f)}
+                          className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="Ver Detalle DTE"
+                        >
                           <FileText size={18} />
                         </button>
-                        <button className="text-green-600 hover:text-green-800 p-1.5 hover:bg-green-50 rounded-lg transition-colors" title="Marcar como Pagada">
-                          <CheckCircle size={18} />
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-900 p-1.5 hover:bg-gray-100 rounded-lg transition-colors" title="Descargar PDF XML">
+                        {f.estado !== 'PAGADA' && (
+                          <button 
+                            onClick={() => handleMarkAsPaid(f.id_factura)}
+                            className="text-green-600 hover:text-green-800 p-1.5 hover:bg-green-50 rounded-lg transition-colors" 
+                            title="Marcar como Pagada"
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleDownloadPDF(f.id_presupuesto)}
+                          className="text-gray-600 hover:text-gray-900 p-1.5 hover:bg-gray-100 rounded-lg transition-colors" 
+                          title="Descargar PDF del Presupuesto"
+                        >
                           <Download size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteFactura(f.id_factura)}
+                          className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                          title="Eliminar Factura"
+                        >
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -228,6 +329,7 @@ export default function Facturas({ user }) {
               <div className="bg-blue-50 text-blue-800 p-4 rounded-xl mb-6 text-sm border border-blue-100 flex items-start">
                 <div className="mr-3 mt-0.5">ℹ️</div>
                 <p>La emisión requiere conexión directa mediante certificado digital con el Servicio de Impuestos Internos. Actualmente el módulo mostrará la estructura de datos requerida para generar el archivo XML del DTE.</p>
+              </div>
               <form onSubmit={handleEmitirFactura}>
                 <div className="space-y-4">
                   <h4 className="font-bold text-gray-700 border-b pb-2">1. Datos del Receptor</h4>
@@ -360,7 +462,116 @@ export default function Facturas({ user }) {
                     </button>
                   </div>
                 </div>
-              </form>   </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {viewingFactura && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-gray-150">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div className="flex items-center space-x-2">
+                <FileText className="text-corporativoAzul" size={24} />
+                <h3 className="text-lg font-bold text-gray-900">Detalle Documento Tributario (DTE)</h3>
+              </div>
+              <button 
+                onClick={() => setViewingFactura(null)} 
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Header Info */}
+              <div className="flex justify-between items-start border-b pb-4">
+                <div>
+                  <span className="text-xs uppercase tracking-wider font-bold text-gray-400">Tipo Documento</span>
+                  <h4 className="text-base font-extrabold text-gray-900">FACTURA ELECTRÓNICA</h4>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-wider font-bold text-gray-400">N° Documento</span>
+                  <h4 className="text-lg font-black text-corporativoRojo">F-{viewingFactura.numero_factura}</h4>
+                </div>
+              </div>
+
+              {/* Status & Date */}
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm">
+                <div>
+                  <span className="text-gray-500 font-semibold block mb-0.5">Fecha Emisión:</span>
+                  <span className="font-bold text-gray-800">{new Date(viewingFactura.fecha_emision).toLocaleDateString('es-CL')}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 font-semibold block mb-0.5">Estado Pago:</span>
+                  <span className={`px-2.5 py-0.5 rounded text-xs font-bold border inline-block ${getStatusColor(viewingFactura.estado)}`}>
+                    {viewingFactura.estado}
+                  </span>
+                </div>
+              </div>
+
+              {/* Client/Receptor Info */}
+              <div className="space-y-3">
+                <h5 className="font-bold text-gray-700 border-b pb-1.5 text-xs uppercase tracking-wider">Información del Receptor</h5>
+                <div className="grid grid-cols-2 gap-y-3 text-sm">
+                  <div>
+                    <span className="text-gray-500 block">Razón Social:</span>
+                    <span className="font-bold text-gray-800">{viewingFactura.presupuesto?.orden?.cliente?.nombre || 'Consumidor General'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 block">RUT:</span>
+                    <span className="font-bold text-gray-800">{viewingFactura.presupuesto?.orden?.cliente?.rut || 'S/R'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 block">Giro Comercial:</span>
+                    <span className="font-bold text-gray-800">{viewingFactura.presupuesto?.orden?.cliente?.observaciones || 'Servicios Técnicos / General'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 block">Dirección / Comuna:</span>
+                    <span className="font-bold text-gray-800">{viewingFactura.presupuesto?.orden?.cliente?.direccion || 'Los Ángeles'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-2 text-sm">
+                <h5 className="font-bold text-blue-900 border-b border-blue-100 pb-1.5 text-xs uppercase tracking-wider">Desglose de Valores</h5>
+                <div className="flex justify-between text-gray-600">
+                  <span>Monto Neto (Base):</span>
+                  <span className="font-semibold">${Math.round(viewingFactura.total_facturado / 1.19).toLocaleString('es-CL')}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>IVA Débito Fiscal (19%):</span>
+                  <span className="font-semibold">${Math.round(viewingFactura.total_facturado - (viewingFactura.total_facturado / 1.19)).toLocaleString('es-CL')}</span>
+                </div>
+                <div className="flex justify-between border-t border-blue-200/60 pt-2 font-bold text-gray-900 text-base">
+                  <span>Total Facturado:</span>
+                  <span className="text-corporativoRojo">${viewingFactura.total_facturado.toLocaleString('es-CL')}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between space-x-3">
+              <span className="text-[11px] text-gray-400 flex items-center">
+                🔒 Firmado Digitalmente (SII - Certificado Activo)
+              </span>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => handleDownloadPDF(viewingFactura.id_presupuesto)}
+                  className="px-4 py-2 bg-corporativoAzul text-white text-sm font-semibold rounded-lg hover:bg-blue-900 transition-colors shadow-sm flex items-center"
+                >
+                  <Download size={16} className="mr-1.5" />
+                  Descargar PDF
+                </button>
+                <button 
+                  onClick={() => setViewingFactura(null)} 
+                  className="px-4 py-2 text-gray-600 text-sm font-medium hover:bg-gray-200 rounded-lg transition-colors border border-gray-200 bg-white"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         </div>

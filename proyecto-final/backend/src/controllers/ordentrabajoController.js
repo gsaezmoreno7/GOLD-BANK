@@ -6,7 +6,8 @@ exports.getAll = async (req, res) => {
       include: {
         evidencias: true,
         cliente: true,
-        maquina: true
+        maquina: true,
+        presupuestos: true
       }
     });
     res.json(data);
@@ -22,7 +23,8 @@ exports.getById = async (req, res) => {
       include: {
         evidencias: true,
         cliente: true,
-        maquina: true
+        maquina: true,
+        presupuestos: true
       }
     });
     if (!data) return res.status(404).json({ error: 'No encontrado' });

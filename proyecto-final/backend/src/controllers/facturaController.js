@@ -2,7 +2,19 @@ const prisma = require('../prismaClient');
 
 exports.getAll = async (req, res) => {
   try {
-    const data = await prisma.factura.findMany();
+    const data = await prisma.factura.findMany({
+      include: {
+        presupuesto: {
+          include: {
+            orden: {
+              include: {
+                cliente: true
+              }
+            }
+          }
+        }
+      }
+    });
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -11,7 +23,20 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const data = await prisma.factura.findUnique({ where: { id_factura: parseInt(req.params.id) } });
+    const data = await prisma.factura.findUnique({
+      where: { id_factura: parseInt(req.params.id) },
+      include: {
+        presupuesto: {
+          include: {
+            orden: {
+              include: {
+                cliente: true
+              }
+            }
+          }
+        }
+      }
+    });
     if (!data) return res.status(404).json({ error: 'No encontrado' });
     res.json(data);
   } catch (error) {

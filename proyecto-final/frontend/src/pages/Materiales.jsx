@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlusCircle, Search, Edit2, X } from 'lucide-react';
+import { PlusCircle, Search, Edit2, Trash2, X } from 'lucide-react';
 
 export default function Materiales({ user }) {
   const [materiales, setMateriales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
@@ -21,15 +22,25 @@ export default function Materiales({ user }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/material', {
+      const payload = {
         nombre: formData.nombre,
         tipo: formData.tipo,
         unidad_medida: formData.unidad_medida,
         precio_referencia: parseFloat(formData.precio_referencia || 0)
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      };
+
+      if (editingMaterial) {
+        await axios.put(`/api/material/${editingMaterial.id_material}`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post('/api/material', payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+
       setShowModal(false);
+      setEditingMaterial(null);
       setFormData({
         nombre: '',
         tipo: 'ACERO',
@@ -42,6 +53,31 @@ export default function Materiales({ user }) {
       alert('Hubo un error al guardar el material.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEdit = (material) => {
+    setEditingMaterial(material);
+    setFormData({
+      nombre: material.nombre,
+      tipo: material.tipo || 'ACERO',
+      unidad_medida: material.unidad_medida || 'KG',
+      precio_referencia: material.precio_referencia.toString()
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar este material del inventario?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/material/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchMateriales();
+    } catch (error) {
+      console.error('Error deleting material:', error);
+      alert('Hubo un error al intentar eliminar el material.');
     }
   };
 
@@ -72,7 +108,16 @@ export default function Materiales({ user }) {
         </div>
         {(user.rol === 'ADMIN' || user.rol === 'ADMINISTRATIVO') && (
           <button 
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingMaterial(null);
+              setFormData({
+                nombre: '',
+                tipo: 'ACERO',
+                unidad_medida: 'KG',
+                precio_referencia: ''
+              });
+              setShowModal(true);
+            }}
             className="bg-corporativoAzul text-white px-4 py-2.5 rounded-xl font-medium flex items-center hover:bg-blue-900 transition-all shadow-md hover:shadow-lg"
           >
             <PlusCircle className="mr-2" size={20} />
@@ -128,9 +173,20 @@ export default function Materiales({ user }) {
                     <td className="p-4 text-gray-600 font-medium">{m.unidad_medida || 'UNIDAD'}</td>
                     <td className="p-4 text-corporativoRojo font-bold">${m.precio_referencia.toLocaleString('es-CL')}</td>
                     <td className="p-4">
-                      <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEdit(m)}
+                          className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="Editar"
+                        >
                           <Edit2 size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(m.id_material)}
+                          className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                          title="Eliminar"
+                        >
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -142,13 +198,21 @@ export default function Materiales({ user }) {
         </div>
       </div>
 
-      {/* Modal Nuevo Material */}
+      {/* Modal CRUD Material */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-lg font-bold text-gray-900">Registrar Material / Insumo</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingMaterial ? 'Editar Material / Insumo' : 'Registrar Material / Insumo'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingMaterial(null);
+                }} 
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -206,11 +270,18 @@ export default function Materiales({ user }) {
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingMaterial(null);
+                  }} 
+                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                >
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoAzul text-white font-medium rounded-lg hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-75">
-                  {saving ? 'Guardando...' : 'Guardar Material'}
+                  {saving ? 'Guardando...' : editingMaterial ? 'Guardar Cambios' : 'Guardar Material'}
                 </button>
               </div>
             </form>

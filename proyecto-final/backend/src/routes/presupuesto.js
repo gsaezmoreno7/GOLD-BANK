@@ -39,6 +39,26 @@ router.get('/:id', verifyToken, controller.getById);
 
 /**
  * @swagger
+ * /api/presupuesto/{id}/pdf:
+ *   get:
+ *     summary: Descargar PDF de Presupuesto
+ *     tags: [Presupuesto]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Archivo PDF devuelto exitosamente
+ */
+router.get('/:id/pdf', verifyToken, controller.downloadPDF);
+
+/**
+ * @swagger
  * /api/presupuesto:
  *   post:
  *     summary: Crear Presupuesto

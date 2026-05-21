@@ -91,9 +91,56 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    await prisma.ordenTrabajo.delete({ where: { id_orden: parseInt(req.params.id) } });
+    const id = parseInt(req.params.id);
+    
+    // 1. Obtener presupuestos asociados para borrar sus dependencias
+    const presupuestos = await prisma.presupuesto.findMany({
+      where: { id_orden: id },
+      select: { id_presupuesto: true }
+    });
+    
+    const budgetIds = presupuestos.map(p => p.id_presupuesto);
+    
+    if (budgetIds.length > 0) {
+      // Eliminar pagos asociados a estos presupuestos
+      await prisma.pago.deleteMany({
+        where: { id_presupuesto: { in: budgetIds } }
+      });
+      
+      // Eliminar facturas asociadas a estos presupuestos
+      await prisma.factura.deleteMany({
+        where: { id_presupuesto: { in: budgetIds } }
+      });
+      
+      // Eliminar presupuestos
+      await prisma.presupuesto.deleteMany({
+        where: { id_orden: id }
+      });
+    }
+    
+    // 2. Eliminar items de reparación
+    await prisma.itemReparacion.deleteMany({
+      where: { id_orden: id }
+    });
+    
+    // 3. Eliminar evidencias fotográficas
+    await prisma.evidenciaFotografica.deleteMany({
+      where: { id_orden: id }
+    });
+    
+    // 4. Eliminar materiales usados
+    await prisma.materialUsado.deleteMany({
+      where: { id_orden: id }
+    });
+    
+    // 5. Finalmente, eliminar la orden de trabajo
+    await prisma.ordenTrabajo.delete({
+      where: { id_orden: id }
+    });
+    
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error al eliminar orden de trabajo:', error);
+    res.status(500).json({ error: `No se pudo eliminar la orden de trabajo debido a un conflicto en la base de datos: ${error.message}` });
   }
 };

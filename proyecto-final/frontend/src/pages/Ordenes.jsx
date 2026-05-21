@@ -84,17 +84,18 @@ export default function Ordenes({ user }) {
   };
 
   const handleDeleteOrden = async (id) => {
-    if (!window.confirm('¿Está seguro de que desea eliminar esta orden de trabajo?')) return;
+    if (!window.confirm('¿Está seguro de que desea eliminar permanentemente esta orden de trabajo y todos sus registros asociados (evidencias, materiales, presupuestos)?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`/api/ordentrabajo/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Orden de trabajo eliminada.');
+      alert('Orden de trabajo eliminada correctamente.');
       fetchOrdenes();
     } catch (error) {
       console.error('Error al eliminar orden:', error);
-      alert('Hubo un error al intentar eliminar la orden.');
+      const errorMsg = error.response?.data?.error || 'Hubo un error al intentar eliminar la orden de trabajo.';
+      alert(errorMsg);
     }
   };
 

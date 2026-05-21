@@ -6,6 +6,7 @@ export default function Clientes({ user }) {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingCliente, setEditingCliente] = useState(null);
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -48,16 +49,52 @@ export default function Clientes({ user }) {
     setFormData({ ...formData, rut: formatRUT(e.target.value) });
   };
 
+  const handleEdit = (cliente) => {
+    setEditingCliente(cliente);
+    setFormData({
+      nombre: cliente.nombre,
+      rut: cliente.rut,
+      telefono: cliente.telefono || '',
+      correo: cliente.correo || ''
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar permanentemente este cliente y todos sus registros asociados?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/cliente/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Cliente eliminado correctamente.');
+      fetchClientes();
+    } catch (error) {
+      console.error('Error al eliminar cliente:', error);
+      alert('Hubo un error al intentar eliminar el cliente.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('/api/cliente', 
-        { ...formData, id_empresa: user.id_empresa },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (editingCliente) {
+        await axios.put(`/api/cliente/${editingCliente.id_cliente}`, 
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        alert('Cliente actualizado con éxito.');
+      } else {
+        await axios.post('/api/cliente', 
+          { ...formData, id_empresa: user.id_empresa },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        alert('Cliente registrado con éxito.');
+      }
       setShowModal(false);
+      setEditingCliente(null);
       setFormData({ nombre: '', rut: '', telefono: '', correo: '' });
       fetchClientes();
     } catch (error) {
@@ -130,11 +167,19 @@ export default function Clientes({ user }) {
                     <td className="p-4 text-gray-600">{c.correo || 'N/A'}</td>
                     <td className="p-4">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                        <button 
+                          onClick={() => handleEdit(c)}
+                          className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                          title="Editar"
+                        >
                           <Edit2 size={18} />
                         </button>
                         {(user?.rol === 'ADMIN') && (
-                          <button className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                          <button 
+                            onClick={() => handleDelete(c.id_cliente)}
+                            className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                            title="Eliminar"
+                          >
                             <Trash2 size={18} />
                           </button>
                         )}
@@ -153,8 +198,17 @@ export default function Clientes({ user }) {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-lg font-bold text-gray-900">Registrar Nuevo Cliente</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingCliente ? 'Editar Cliente' : 'Registrar Nuevo Cliente'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingCliente(null);
+                  setFormData({ nombre: '', rut: '', telefono: '', correo: '' });
+                }} 
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -209,11 +263,19 @@ export default function Clientes({ user }) {
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingCliente(null);
+                    setFormData({ nombre: '', rut: '', telefono: '', correo: '' });
+                  }} 
+                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                >
                   Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoAzul text-white font-medium rounded-lg hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-70">
-                  {saving ? 'Guardando...' : 'Guardar Cliente'}
+                  {saving ? 'Guardando...' : editingCliente ? 'Guardar Cambios' : 'Guardar Cliente'}
                 </button>
               </div>
             </form>

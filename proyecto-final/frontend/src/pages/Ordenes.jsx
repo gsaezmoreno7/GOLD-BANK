@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlusCircle, Search, Edit2, Camera, FileText, X, UploadCloud, Image as ImageIcon } from 'lucide-react';
+import { PlusCircle, Search, Edit2, Camera, FileText, X, UploadCloud, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 export default function Ordenes({ user }) {
   const [ordenes, setOrdenes] = useState([]);
@@ -8,6 +8,7 @@ export default function Ordenes({ user }) {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('activas');
   
   // Evidencia state
   const [evidenciaModalOpen, setEvidenciaModalOpen] = useState(false);
@@ -69,6 +70,21 @@ export default function Ordenes({ user }) {
       alert('Hubo un error al actualizar la orden.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteOrden = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea eliminar esta orden de trabajo?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/ordentrabajo/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Orden de trabajo eliminada.');
+      fetchOrdenes();
+    } catch (error) {
+      console.error('Error al eliminar orden:', error);
+      alert('Hubo un error al intentar eliminar la orden.');
     }
   };
 
@@ -278,7 +294,7 @@ export default function Ordenes({ user }) {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
           <div className="relative w-80">
             <input 
               type="text" 
@@ -288,6 +304,29 @@ export default function Ordenes({ user }) {
               className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-corporativoAzul/20 focus:border-corporativoAzul transition-all"
             />
             <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+          </div>
+
+          <div className="flex bg-gray-200/60 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab('activas')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'activas'
+                  ? 'bg-corporativoAzul text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Órdenes Activas ({ordenes.filter(o => o.estado !== 'FINALIZADA' && o.estado !== 'ENTREGADA').length})
+            </button>
+            <button
+              onClick={() => setActiveTab('terminadas')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'terminadas'
+                  ? 'bg-corporativoAzul text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Órdenes Terminadas ({ordenes.filter(o => o.estado === 'FINALIZADA' || o.estado === 'ENTREGADA').length})
+            </button>
           </div>
         </div>
 
@@ -310,6 +349,10 @@ export default function Ordenes({ user }) {
               ) : (
                 ordenes
                   .filter((o) => {
+                    const isTerminada = o.estado === 'FINALIZADA' || o.estado === 'ENTREGADA';
+                    if (activeTab === 'activas' && isTerminada) return false;
+                    if (activeTab === 'terminadas' && !isTerminada) return false;
+
                     const searchLower = searchTerm.toLowerCase();
                     return (
                       o.id_orden.toString().includes(searchLower) ||
@@ -356,6 +399,15 @@ export default function Ordenes({ user }) {
                             title={o.presupuestos && o.presupuestos.length > 0 ? "Ver Presupuesto" : "Generar Presupuesto"}
                           >
                             <FileText size={18} />
+                          </button>
+                        )}
+                        {(user.rol !== 'TECNICO') && (
+                          <button 
+                            onClick={() => handleDeleteOrden(o.id_orden)}
+                            className="text-red-600 hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                            title="Eliminar Orden"
+                          >
+                            <Trash2 size={18} />
                           </button>
                         )}
                       </div>

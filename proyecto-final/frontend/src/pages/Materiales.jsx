@@ -148,50 +148,65 @@ export default function Materiales({ user }) {
                 <th className="p-4 font-semibold border-b border-gray-100">Tipo</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Unidad de Medida</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Precio Referencia</th>
+                <th className="p-4 font-semibold border-b border-gray-100">Estado de Inventario</th>
                 <th className="p-4 font-semibold border-b border-gray-100">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500">Cargando inventario...</td></tr>
+                <tr><td colSpan="6" className="p-8 text-center text-gray-500">Cargando inventario...</td></tr>
               ) : materiales.length === 0 ? (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500 font-medium">No hay materiales registrados en el inventario</td></tr>
+                <tr><td colSpan="6" className="p-8 text-center text-gray-500 font-medium">No hay materiales registrados en el inventario</td></tr>
               ) : (
                 materiales
                   .filter((m) => 
                     m.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     (m.tipo || '').toLowerCase().includes(searchTerm.toLowerCase())
                   )
-                  .map((m) => (
-                  <tr key={m.id_material} className="hover:bg-gray-50/80 transition-colors group">
-                    <td className="p-4 font-medium text-gray-900">{m.nombre}</td>
-                    <td className="p-4 text-gray-600">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-gray-50 text-gray-700 border-gray-200">
-                        {m.tipo || 'GENERAL'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-600 font-medium">{m.unidad_medida || 'UNIDAD'}</td>
-                    <td className="p-4 text-corporativoRojo font-bold">${m.precio_referencia.toLocaleString('es-CL')}</td>
-                    <td className="p-4">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleEdit(m)}
-                          className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(m.id_material)}
-                          className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                  .map((m) => {
+                    const qtyUsada = m.materiales_usados ? m.materiales_usados.reduce((acc, curr) => acc + curr.cantidad, 0) : 0;
+                    return (
+                      <tr key={m.id_material} className="hover:bg-gray-50/80 transition-colors group">
+                        <td className="p-4 font-medium text-gray-900">{m.nombre}</td>
+                        <td className="p-4 text-gray-600">
+                          <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-gray-50 text-gray-700 border-gray-200">
+                            {m.tipo || 'GENERAL'}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-600 font-medium">{m.unidad_medida || 'UNIDAD'}</td>
+                        <td className="p-4 text-corporativoRojo font-bold">${m.precio_referencia.toLocaleString('es-CL')}</td>
+                        <td className="p-4 text-gray-600">
+                          {qtyUsada === 0 ? (
+                            <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-green-50 text-green-700 border-green-200">
+                              En Inventario (Sin Usar)
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200">
+                              En Uso (Usado: {qtyUsada} {m.unidad_medida || 'UN'})
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleEdit(m)}
+                              className="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(m.id_material)}
+                              className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
               )}
             </tbody>
           </table>

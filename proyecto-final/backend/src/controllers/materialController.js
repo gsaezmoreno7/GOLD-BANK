@@ -2,7 +2,11 @@ const prisma = require('../prismaClient');
 
 exports.getAll = async (req, res) => {
   try {
-    const data = await prisma.material.findMany();
+    const data = await prisma.material.findMany({
+      include: {
+        materiales_usados: true
+      }
+    });
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });

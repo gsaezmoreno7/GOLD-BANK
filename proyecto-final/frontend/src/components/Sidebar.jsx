@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Wrench, FileText, Package, Coins, Percent } from 'lucide-react';
+import { LayoutDashboard, Users, Wrench, FileText, Package, Coins, Percent, Upload } from 'lucide-react';
 
 export default function Sidebar({ user, open }) {
   const links = [
@@ -11,6 +11,7 @@ export default function Sidebar({ user, open }) {
     { name: 'Gastos', path: '/gastos', icon: <Coins size={20} /> },
     { name: 'Facturación', path: '/facturas', icon: <FileText size={20} /> },
     { name: 'Impuestos', path: '/impuestos', icon: <Percent size={20} /> },
+    { name: 'Importar Excel', path: '/importar', icon: <Upload size={20} /> },
   ];
 
   return (

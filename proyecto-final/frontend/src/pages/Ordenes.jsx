@@ -23,7 +23,8 @@ export default function Ordenes({ user }) {
     id_cliente: '',
     tipo_maquina: '',
     descripcion_inicial: '',
-    prioridad: 'MEDIA'
+    prioridad: 'MEDIA',
+    es_interna: false
   });
 
   // Edit Order State
@@ -218,7 +219,7 @@ export default function Ordenes({ user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.id_cliente) {
+    if (!formData.es_interna && !formData.id_cliente) {
       alert('Por favor seleccione un cliente.');
       return;
     }
@@ -234,9 +235,11 @@ export default function Ordenes({ user }) {
         id_cliente: '',
         tipo_maquina: '',
         descripcion_inicial: '',
-        prioridad: 'MEDIA'
+        prioridad: 'MEDIA',
+        es_interna: false
       });
       fetchOrdenes();
+      alert('Orden de trabajo registrada con éxito.');
     } catch (error) {
       console.error('Error al crear orden:', error);
       alert('Hubo un error al generar la orden.');
@@ -441,58 +444,90 @@ export default function Ordenes({ user }) {
                       o.prioridad.toLowerCase().includes(searchLower)
                     );
                   })
-                  .map((o) => (
-                  <tr key={o.id_orden} className="hover:bg-gray-50/80 transition-colors group">
-                    <td className="p-4 font-bold text-corporativoAzul">#{o.id_orden}</td>
-                    <td className="p-4 text-gray-600">{new Date(o.fecha_ingreso).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${o.prioridad === 'ALTA' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                        {o.prioridad}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(o.estado)}`}>
-                        {o.estado.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleOpenEdit(o)}
-                          className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
-                          title="Gestionar Orden"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleOpenEvidencia(o)}
-                          className="text-gray-600 hover:text-gray-900 p-1.5 hover:bg-gray-100 rounded-lg transition-colors" 
-                          title="Evidencia Fotográfica"
-                        >
-                          <Camera size={18} />
-                        </button>
-                        {(user.rol !== 'TECNICO') && (
-                          <button 
-                            onClick={() => handlePresupuestoClick(o)}
-                            className="text-corporativoRojo hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
-                            title={o.presupuestos && o.presupuestos.length > 0 ? "Ver Presupuesto" : "Generar Presupuesto"}
-                          >
-                            <FileText size={18} />
-                          </button>
-                        )}
-                        {(user.rol !== 'TECNICO') && (
-                          <button 
-                            onClick={() => handleDeleteOrden(o.id_orden)}
-                            className="text-red-600 hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
-                            title="Eliminar Orden"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                  .map((o) => {
+                    const isInterna = o.cliente?.rut === '76.123.456-K';
+                    return (
+                      <tr 
+                        key={o.id_orden} 
+                        className={`hover:bg-gray-50/80 transition-colors group ${
+                          isInterna ? 'border-l-4 border-purple-500 bg-purple-50/10' : ''
+                        }`}
+                      >
+                        <td className="p-4">
+                          <div className="flex flex-col">
+                            <span className="font-black text-corporativoAzul text-sm flex items-center">
+                              #{o.id_orden}
+                              {isInterna && (
+                                <span className="ml-2 px-1.5 py-0.5 text-[9px] bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-md uppercase tracking-wider animate-pulse flex items-center">
+                                  <Wrench size={8} className="mr-0.5" /> Interna
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-xs font-bold text-gray-800 mt-1">
+                              {isInterna ? 'MAESTRANZA R.S SPA' : o.cliente?.nombre || 'Cliente General'}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-semibold mt-0.5 truncate max-w-[200px]">
+                              {o.maquina?.tipo_maquina || 'Equipo / Activo'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-gray-600 font-medium text-xs">
+                          {new Date(o.fecha_ingreso).toLocaleDateString('es-CL', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${o.prioridad === 'ALTA' ? 'bg-red-50 text-red-700 border-red-200 animate-pulse' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                            {o.prioridad}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(o.estado)}`}>
+                            {o.estado.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleOpenEdit(o)}
+                              className="text-corporativoAzul hover:text-blue-900 p-1.5 hover:bg-blue-50 rounded-lg transition-colors" 
+                              title="Gestionar Orden"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button 
+                              onClick={() => handleOpenEvidencia(o)}
+                              className="text-gray-600 hover:text-gray-900 p-1.5 hover:bg-gray-100 rounded-lg transition-colors" 
+                              title="Evidencia Fotográfica"
+                            >
+                              <Camera size={18} />
+                            </button>
+                            {/* Solo mostrar botón de presupuesto si NO es una orden interna */}
+                            {!isInterna && user.rol !== 'TECNICO' && (
+                              <button 
+                                onClick={() => handlePresupuestoClick(o)}
+                                className="text-corporativoRojo hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                                title={o.presupuestos && o.presupuestos.length > 0 ? "Ver Presupuesto" : "Generar Presupuesto"}
+                              >
+                                <FileText size={18} />
+                              </button>
+                            )}
+                            {user.rol !== 'TECNICO' && (
+                              <button 
+                                onClick={() => handleDeleteOrden(o.id_orden)}
+                                className="text-red-600 hover:text-red-900 p-1.5 hover:bg-red-50 rounded-lg transition-colors" 
+                                title="Eliminar Orden"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
               )}
             </tbody>
           </table>
@@ -508,34 +543,73 @@ export default function Ordenes({ user }) {
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
                 <X size={20} />
               </button>
-                       <form onSubmit={handleSubmit}>
+            </div>
+            <form onSubmit={handleSubmit}>
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-                    <select 
-                      required
-                      value={formData.id_cliente}
-                      onChange={(e) => setFormData({ ...formData, id_cliente: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul focus:border-corporativoAzul outline-none transition-all"
-                    >
-                      <option value="">Seleccione un cliente...</option>
-                      {clientes.map((c) => (
-                        <option key={c.id_cliente} value={c.id_cliente}>
-                          {c.nombre} ({c.rut})
-                        </option>
-                      ))}
-                    </select>
+                  {/* Switch Toggle for Internal Order */}
+                  <div className="col-span-2 bg-purple-50/40 p-3.5 rounded-xl border border-purple-100/50 flex items-center justify-between">
+                    <div>
+                      <span className="block text-sm font-bold text-gray-800">¿Es una Orden de Trabajo Interna?</span>
+                      <span className="block text-[10px] text-gray-500 font-semibold mt-0.5">Para mantención de máquinas, herramientas y activos del taller</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.es_interna} 
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          es_interna: e.target.checked,
+                          id_cliente: e.target.checked ? '' : formData.id_cliente 
+                        })} 
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
                   </div>
+
+                  {formData.es_interna ? (
+                    <div className="col-span-2 p-3.5 bg-purple-50/50 border border-purple-100 rounded-xl flex items-start space-x-3 text-purple-800 animate-fade-in">
+                      <div className="p-2 bg-purple-100 text-purple-700 rounded-lg mt-0.5">
+                        <Wrench size={16} />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold">Orden Registrada como Control Interno</span>
+                        <span className="block text-[10px] text-purple-600 font-semibold mt-1 leading-relaxed">
+                          Se asociará a la cuenta de **Maestranza R.S SPA (INTERNO)**. No generará cotizaciones ni facturas, y sus consumos se registrarán como costos operacionales del taller.
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                      <select 
+                        required
+                        value={formData.id_cliente}
+                        onChange={(e) => setFormData({ ...formData, id_cliente: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul focus:border-corporativoAzul outline-none transition-all text-sm text-gray-700"
+                      >
+                        <option value="">Seleccione un cliente...</option>
+                        {clientes.map((c) => (
+                          <option key={c.id_cliente} value={c.id_cliente}>
+                            {c.nombre} ({c.rut})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Máquina o Equipo</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {formData.es_interna ? 'Activo / Equipo Interno a Reparar o Mantener' : 'Máquina o Equipo'}
+                    </label>
                     <input 
                       type="text" 
                       required
                       value={formData.tipo_maquina}
                       onChange={(e) => setFormData({ ...formData, tipo_maquina: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul focus:border-corporativoAzul outline-none transition-all" 
-                      placeholder="Ej. Cilindro Hidráulico Komatsu" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul focus:border-corporativoAzul outline-none transition-all text-sm" 
+                      placeholder={formData.es_interna ? "Ej. Torno CNC N°1, Esmeril de Pedestal, Techumbre Taller" : "Ej. Cilindro Hidráulico Komatsu"} 
                     />
                   </div>
                   <div className="col-span-2">
@@ -571,7 +645,7 @@ export default function Ordenes({ user }) {
                   {saving ? 'Guardando...' : 'Generar Orden'}
                 </button>
               </div>
-            </form>          </div>
+            </form>
           </div>
         </div>
       )}

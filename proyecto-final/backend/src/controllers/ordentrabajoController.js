@@ -46,28 +46,69 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { tipo_maquina, id_cliente, ...rest } = req.body;
+    const { tipo_maquina, id_cliente, es_interna, ...rest } = req.body;
     const id_empresa = req.user.id_empresa;
     
-    let id_maquina = req.body.id_maquina;
+    let resolvedClientId = id_cliente ? parseInt(id_cliente) : null;
+    let resolvedMachineId = req.body.id_maquina ? parseInt(req.body.id_maquina) : null;
     
-    // Si pasaron el texto de la máquina, la creamos automáticamente
-    if (tipo_maquina) {
-      const maquina = await prisma.maquina.create({
-        data: {
-          id_cliente: parseInt(id_cliente),
-          tipo_maquina
+    // Si la orden se define como interna, usamos o creamos el cliente y máquina del sistema
+    if (es_interna) {
+      let client = await prisma.cliente.findUnique({ where: { rut: '76.123.456-K' } });
+      if (!client) {
+        client = await prisma.cliente.create({
+          data: {
+            id_empresa,
+            nombre: 'MAESTRANZA R.S SPA (INTERNO)',
+            rut: '76.123.456-K',
+            telefono: '+56912345678',
+            direccion: 'Av. Industrial 1234, Los Ángeles',
+            correo: 'contacto@maestranzars.cl',
+            observaciones: 'Cliente de sistema para registrar órdenes de trabajo internas del taller (mantenimiento y control de activos).'
+          }
+        });
+      }
+      resolvedClientId = client.id_cliente;
+      
+      // Si no hay máquina seleccionada, buscamos o creamos una máquina interna por defecto
+      if (!resolvedMachineId) {
+        const maquinaName = tipo_maquina || 'Instalaciones / Equipos del Taller';
+        let maquina = await prisma.maquina.findFirst({
+          where: { id_cliente: client.id_cliente, tipo_maquina: maquinaName }
+        });
+        if (!maquina) {
+          maquina = await prisma.maquina.create({
+            data: {
+              id_cliente: client.id_cliente,
+              tipo_maquina: maquinaName,
+              marca: 'Propia',
+              modelo: 'Taller',
+              observaciones: 'Activo o herramienta interna del taller.'
+            }
+          });
         }
-      });
-      id_maquina = maquina.id_maquina;
+        resolvedMachineId = maquina.id_maquina;
+      }
+    } else {
+      // Flujo normal: Si pasaron el texto de la máquina y es orden de cliente, la creamos
+      if (tipo_maquina && resolvedClientId && !resolvedMachineId) {
+        const maquina = await prisma.maquina.create({
+          data: {
+            id_cliente: resolvedClientId,
+            tipo_maquina
+          }
+        });
+        resolvedMachineId = maquina.id_maquina;
+      }
     }
     
+    // Crear la orden de trabajo final
     const data = await prisma.ordenTrabajo.create({ 
       data: {
         ...rest,
         id_empresa,
-        id_cliente: parseInt(id_cliente),
-        id_maquina: id_maquina ? parseInt(id_maquina) : undefined
+        id_cliente: resolvedClientId,
+        id_maquina: resolvedMachineId || undefined
       } 
     });
     res.status(201).json(data);

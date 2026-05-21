@@ -17,7 +17,8 @@ import {
   LayoutDashboard, 
   Wrench, 
   Package, 
-  Sparkles 
+  Sparkles,
+  Upload
 } from 'lucide-react';
 
 export default function Dashboard({ user }) {
@@ -26,7 +27,9 @@ export default function Dashboard({ user }) {
     activas: 0,
     egresos: 0,
     facturado: 0,
-    utilidad: 0
+    utilidad: 0,
+    internasActivas: 0,
+    mantenimientoCosto: 0
   });
   const [newClientes, setNewClientes] = useState([]);
   const [recentFacturas, setRecentFacturas] = useState([]);
@@ -62,16 +65,35 @@ export default function Dashboard({ user }) {
       const gastos = resGastos.data;
 
       // Calculate statistics
-      const activas = ordenes.filter(o => ['INGRESADA', 'EN_DIAGNOSTICO', 'EN_REPARACION'].includes(o.estado)).length;
+      const activas = ordenes.filter(o => 
+        ['INGRESADA', 'EN_DIAGNOSTICO', 'EN_REPARACION'].includes(o.estado) && 
+        o.cliente?.rut !== '76.123.456-K'
+      ).length;
       const totalGastos = gastos.reduce((acc, curr) => acc + curr.monto, 0);
       const totalFacturado = facturas.filter(f => f.estado !== 'ANULADA').reduce((acc, curr) => acc + curr.total_facturado, 0);
       const utilidadReal = totalFacturado - totalGastos;
+
+      const ordenesInternas = ordenes.filter(o => o.cliente?.rut === '76.123.456-K');
+      const internasActivas = ordenesInternas.filter(o => 
+        ['INGRESADA', 'EN_DIAGNOSTICO', 'EN_REPARACION'].includes(o.estado)
+      ).length;
+
+      let mantenimientoCosto = 0;
+      ordenesInternas.forEach(o => {
+        if (o.materiales_usados) {
+          o.materiales_usados.forEach(mu => {
+            mantenimientoCosto += mu.costo_real * mu.cantidad;
+          });
+        }
+      });
 
       setStats({
         activas,
         egresos: totalGastos,
         facturado: totalFacturado,
-        utilidad: utilidadReal
+        utilidad: utilidadReal,
+        internasActivas,
+        mantenimientoCosto
       });
 
       // Filter 3 most urgent active orders
@@ -175,7 +197,7 @@ export default function Dashboard({ user }) {
       {/* Quick Actions Operations Menu */}
       <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
         <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Operaciones Rápidas</span>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           <button 
             onClick={() => navigate('/ordenes')}
             className="flex items-center justify-center space-x-2 p-3 bg-blue-50/50 hover:bg-blue-50 text-corporativoAzul rounded-xl border border-blue-100 font-bold text-xs transition-all hover:scale-[1.02]"
@@ -206,6 +228,14 @@ export default function Dashboard({ user }) {
           >
             <Plus size={16} />
             <span>Agregar Material</span>
+          </button>
+
+          <button 
+            onClick={() => navigate('/importar')}
+            className="flex items-center justify-center space-x-2 p-3 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100 font-bold text-xs transition-all hover:scale-[1.02] col-span-2 sm:col-span-1"
+          >
+            <Upload size={16} />
+            <span>Importar Excel</span>
           </button>
         </div>
       </div>
@@ -443,6 +473,25 @@ export default function Dashboard({ user }) {
                   <span className="text-[10px] text-gray-455 font-semibold">Órdenes generadas en total</span>
                 </div>
                 <span className="text-sm font-black text-corporativoAzul">{operationalMetrics.totalOrders} Trabajos</span>
+              </div>
+
+              <div className="flex justify-between items-center py-1 border-t border-gray-50 pt-3">
+                <div>
+                  <span className="block text-xs font-bold text-gray-800">Mantenimiento Activo (Taller)</span>
+                  <span className="text-[10px] text-gray-450 font-semibold">Órdenes internas en curso</span>
+                </div>
+                <span className="text-sm font-black text-purple-750 flex items-center">
+                  <Wrench size={12} className="mr-1 inline text-purple-500" />
+                  {stats.internasActivas} Activas
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-1 border-t border-gray-50 pt-3">
+                <div>
+                  <span className="block text-xs font-bold text-gray-800">Inversión en Mantenimiento</span>
+                  <span className="text-[10px] text-gray-450 font-semibold">Materiales consumidos internamente</span>
+                </div>
+                <span className="text-sm font-black text-indigo-700">${stats.mantenimientoCosto.toLocaleString('es-CL')}</span>
               </div>
             </div>
           </div>

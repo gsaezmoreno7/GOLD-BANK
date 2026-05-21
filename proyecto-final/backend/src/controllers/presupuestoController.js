@@ -25,6 +25,16 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    const id_orden = req.body.id_orden;
+    if (id_orden) {
+      const orden = await prisma.ordenTrabajo.findUnique({
+        where: { id_orden: parseInt(id_orden) },
+        include: { cliente: true }
+      });
+      if (orden && orden.cliente && orden.cliente.rut === '76.123.456-K') {
+        return res.status(400).json({ error: 'No se pueden generar presupuestos ni cobros comerciales para una Orden de Trabajo Interna del taller.' });
+      }
+    }
     const data = await prisma.presupuesto.create({ data: req.body });
     res.status(201).json(data);
   } catch (error) {

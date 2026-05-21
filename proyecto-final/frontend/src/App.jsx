@@ -9,6 +9,7 @@ import Facturas from './pages/Facturas';
 import Perfil from './pages/Perfil';
 import Gastos from './pages/Gastos';
 import Impuestos from './pages/Impuestos';
+import Importar from './pages/Importar';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
@@ -66,6 +67,7 @@ function App() {
                       <Route path="/gastos" element={<Gastos user={user} />} />
                       <Route path="/facturas" element={<Facturas user={user} />} />
                       <Route path="/impuestos" element={<Impuestos user={user} />} />
+                      <Route path="/importar" element={<Importar user={user} />} />
                       <Route path="/perfil" element={<Perfil user={user} onUpdateUser={handleUpdateUser} />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

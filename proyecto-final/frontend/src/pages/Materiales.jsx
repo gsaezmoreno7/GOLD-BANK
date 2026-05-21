@@ -282,6 +282,34 @@ export default function Materiales({ user }) {
                       placeholder="0" 
                     />
                   </div>
+                  {editingMaterial && (
+                    <div className="col-span-2 bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2 mt-2">
+                      <span className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Estado Actual del Insumo</span>
+                      <div className="flex items-center space-x-2">
+                        {(() => {
+                          const qtyUsada = editingMaterial.materiales_usados ? editingMaterial.materiales_usados.reduce((acc, curr) => acc + curr.cantidad, 0) : 0;
+                          return qtyUsada === 0 ? (
+                            <>
+                              <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-green-50 text-green-700 border-green-200">
+                                En Inventario (Sin Usar)
+                              </span>
+                              <span className="text-[11px] text-gray-500 font-medium">Este material no registra consumos.</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="px-2.5 py-1 rounded-md text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200">
+                                En Uso (Usado: {qtyUsada} {editingMaterial.unidad_medida || 'UN'})
+                              </span>
+                              <span className="text-[11px] text-gray-500 font-medium">Consumido en órdenes de trabajo.</span>
+                            </>
+                          );
+                        })()}
+                      </div>
+                      <div className="text-[11.5px] text-gray-600 leading-relaxed border-t border-gray-150 pt-2.5">
+                        💡 <strong>¿Cómo se marca como usado?</strong> El uso del material se registra automáticamente en las Órdenes de Trabajo. Para descontar o imputar este material, vaya a la sección de <strong>Órdenes de Trabajo</strong>, haga clic en <strong>Gestionar</strong> (icono ✏️) en la orden que lo consumió y agréguelo en la sección de 'Insumos / Materiales Consumidos'.
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">

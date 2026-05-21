@@ -36,6 +36,14 @@ export default function Ordenes({ user }) {
     diagnostico: ''
   });
 
+  // Materiales Usados State
+  const [materialesDisponibles, setMaterialesDisponibles] = useState([]);
+  const [materialesUsados, setMaterialesUsados] = useState([]);
+  const [nuevoMaterialUsado, setNuevoMaterialUsado] = useState({
+    id_material: '',
+    cantidad: ''
+  });
+
   // Presupuesto State
   const [createPresupuestoModalOpen, setCreatePresupuestoModalOpen] = useState(false);
   const [viewPresupuestoModalOpen, setViewPresupuestoModalOpen] = useState(false);
@@ -51,6 +59,8 @@ export default function Ordenes({ user }) {
       descripcion_inicial: orden.descripcion_inicial || '',
       diagnostico: orden.diagnostico || ''
     });
+    setMaterialesUsados(orden.materiales_usados || []);
+    setNuevoMaterialUsado({ id_material: '', cantidad: '' });
     setEditModalOpen(true);
   };
 
@@ -85,6 +95,61 @@ export default function Ordenes({ user }) {
     } catch (error) {
       console.error('Error al eliminar orden:', error);
       alert('Hubo un error al intentar eliminar la orden.');
+    }
+  };
+
+  const handleAddMaterialUsado = async (e) => {
+    e.preventDefault();
+    if (!nuevoMaterialUsado.id_material || !nuevoMaterialUsado.cantidad) {
+      alert('Por favor seleccione un material e ingrese la cantidad.');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        id_orden: editingOrden.id_orden,
+        id_material: parseInt(nuevoMaterialUsado.id_material),
+        cantidad: parseFloat(nuevoMaterialUsado.cantidad)
+      };
+      
+      await axios.post('/api/materialusado', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Fetch updated materials list for this order
+      const resUpdatedOrder = await axios.get(`/api/ordentrabajo/${editingOrden.id_orden}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setMaterialesUsados(resUpdatedOrder.data.materiales_usados || []);
+      setNuevoMaterialUsado({ id_material: '', cantidad: '' });
+      fetchOrdenes(); // Para actualizar listados generales
+      alert('Material registrado en la orden con éxito.');
+    } catch (error) {
+      console.error('Error al agregar material usado:', error);
+      alert('Hubo un error al agregar el material a la orden.');
+    }
+  };
+
+  const handleDeleteMaterialUsado = async (id) => {
+    if (!window.confirm('¿Está seguro de que desea quitar este material de la orden?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/materialusado/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Fetch updated materials list for this order
+      const resUpdatedOrder = await axios.get(`/api/ordentrabajo/${editingOrden.id_orden}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setMaterialesUsados(resUpdatedOrder.data.materiales_usados || []);
+      fetchOrdenes(); // Para actualizar listados generales
+      alert('Material removido de la orden.');
+    } catch (error) {
+      console.error('Error al eliminar material usado:', error);
+      alert('Hubo un error al remover el material.');
     }
   };
 
@@ -179,9 +244,22 @@ export default function Ordenes({ user }) {
     }
   };
 
+  const fetchMaterialesDisponibles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/material', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMaterialesDisponibles(res.data);
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+    }
+  };
+
   useEffect(() => {
     fetchOrdenes();
     fetchClientes();
+    fetchMaterialesDisponibles();
   }, []);
 
   const fetchClientes = async () => {
@@ -614,7 +692,7 @@ export default function Ordenes({ user }) {
       {/* Modal Editar Orden */}
       {editModalOpen && editingOrden && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-lg font-bold text-gray-900">Gestionar Orden de Trabajo #{editingOrden.id_orden}</h3>
               <button onClick={() => setEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
@@ -622,34 +700,34 @@ export default function Ordenes({ user }) {
               </button>
             </div>
             <form onSubmit={handleEditSubmit}>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción Inicial (Falla)</label>
-                  <textarea 
-                    rows="3" 
-                    required
-                    value={editFormData.descripcion_inicial}
-                    onChange={(e) => setEditFormData({ ...editFormData, descripcion_inicial: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all" 
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Diagnóstico Técnico</label>
-                  <textarea 
-                    rows="3" 
-                    placeholder="Ingrese detalles del diagnóstico técnico y reparaciones..."
-                    value={editFormData.diagnostico}
-                    onChange={(e) => setEditFormData({ ...editFormData, diagnostico: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all" 
-                  ></textarea>
-                </div>
+              <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Descripción Inicial (Falla)</label>
+                    <textarea 
+                      rows="2" 
+                      required
+                      value={editFormData.descripcion_inicial}
+                      onChange={(e) => setEditFormData({ ...editFormData, descripcion_inicial: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all text-sm" 
+                    ></textarea>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Diagnóstico Técnico</label>
+                    <textarea 
+                      rows="2" 
+                      placeholder="Ingrese detalles del diagnóstico técnico y reparaciones..."
+                      value={editFormData.diagnostico}
+                      onChange={(e) => setEditFormData({ ...editFormData, diagnostico: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all text-sm" 
+                    ></textarea>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                     <select 
                       value={editFormData.estado}
                       onChange={(e) => setEditFormData({ ...editFormData, estado: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all text-sm text-gray-700"
                     >
                       <option value="INGRESADA">Ingresada</option>
                       <option value="EN_DIAGNOSTICO">En Diagnóstico</option>
@@ -663,7 +741,7 @@ export default function Ordenes({ user }) {
                     <select 
                       value={editFormData.prioridad}
                       onChange={(e) => setEditFormData({ ...editFormData, prioridad: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoAzul outline-none transition-all text-sm text-gray-700"
                     >
                       <option value="BAJA">Baja</option>
                       <option value="MEDIA">Media</option>
@@ -671,12 +749,105 @@ export default function Ordenes({ user }) {
                     </select>
                   </div>
                 </div>
+
+                {/* Panel de Insumos / Materiales Consumidos */}
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                  <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                    <span className="bg-blue-50 text-corporativoAzul p-1 rounded mr-2">⚒️</span>
+                    Insumos / Materiales Consumidos
+                  </h4>
+                  
+                  {/* Formulario para agregar material usado */}
+                  <div className="flex gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-150 items-end">
+                    <div className="flex-1">
+                      <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">Seleccionar Material</label>
+                      <select
+                        value={nuevoMaterialUsado.id_material}
+                        onChange={(e) => setNuevoMaterialUsado({ ...nuevoMaterialUsado, id_material: e.target.value })}
+                        className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-corporativoAzul outline-none bg-white text-gray-700"
+                      >
+                        <option value="">Seleccione un material...</option>
+                        {materialesDisponibles.map((mat) => (
+                          <option key={mat.id_material} value={mat.id_material}>
+                            {mat.nombre} ({mat.unidad_medida || 'UN'}) - Ref: ${mat.precio_referencia.toLocaleString('es-CL')}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="w-24">
+                      <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">Cantidad</label>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="any"
+                        placeholder="1"
+                        value={nuevoMaterialUsado.cantidad}
+                        onChange={(e) => setNuevoMaterialUsado({ ...nuevoMaterialUsado, cantidad: e.target.value })}
+                        className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-corporativoAzul outline-none bg-white font-bold"
+                      />
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleAddMaterialUsado}
+                      className="bg-corporativoAzul text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-900 transition-colors shadow-sm"
+                    >
+                      Agregar
+                    </button>
+                  </div>
+                  
+                  {/* Listado de materiales agregados a esta orden */}
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 uppercase tracking-wider text-[10px] font-bold border-b">
+                          <th className="p-2 font-semibold">Material</th>
+                          <th className="p-2 font-semibold text-center">Cantidad</th>
+                          <th className="p-2 font-semibold text-right">Costo Estimado</th>
+                          <th className="p-2 font-semibold text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {materialesUsados.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="p-4 text-center text-gray-400 font-medium">
+                              Aún no se han asignado materiales a esta orden.
+                            </td>
+                          </tr>
+                        ) : (
+                          materialesUsados.map((mu) => (
+                            <tr key={mu.id_material_usado} className="hover:bg-gray-50/50">
+                              <td className="p-2 font-medium text-gray-800">{mu.material?.nombre || 'Material desconocido'}</td>
+                              <td className="p-2 text-center font-bold text-gray-700">
+                                {mu.cantidad} {mu.material?.unidad_medida || 'UN'}
+                              </td>
+                              <td className="p-2 text-right font-semibold text-corporativoRojo">
+                                ${mu.costo_real ? mu.costo_real.toLocaleString('es-CL') : '0'}
+                              </td>
+                              <td className="p-2 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteMaterialUsado(mu.id_material_usado)}
+                                  className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded"
+                                  title="Quitar material"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end space-x-3">
-                <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors text-sm">
                   Cancelar
                 </button>
-                <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoAzul text-white font-medium rounded-lg hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-75">
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoAzul text-white font-medium rounded-lg hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-75 text-sm">
                   {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>

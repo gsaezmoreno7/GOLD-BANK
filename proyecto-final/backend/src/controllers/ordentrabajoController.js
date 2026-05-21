@@ -7,7 +7,12 @@ exports.getAll = async (req, res) => {
         evidencias: true,
         cliente: true,
         maquina: true,
-        presupuestos: true
+        presupuestos: true,
+        materiales_usados: {
+          include: {
+            material: true
+          }
+        }
       }
     });
     res.json(data);
@@ -24,7 +29,12 @@ exports.getById = async (req, res) => {
         evidencias: true,
         cliente: true,
         maquina: true,
-        presupuestos: true
+        presupuestos: true,
+        materiales_usados: {
+          include: {
+            material: true
+          }
+        }
       }
     });
     if (!data) return res.status(404).json({ error: 'No encontrado' });

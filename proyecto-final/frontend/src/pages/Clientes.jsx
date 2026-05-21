@@ -71,7 +71,8 @@ export default function Clientes({ user }) {
       fetchClientes();
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
-      alert('Hubo un error al intentar eliminar el cliente.');
+      const errorMsg = error.response?.data?.error || 'Hubo un error al intentar eliminar el cliente.';
+      alert(errorMsg);
     }
   };
 

@@ -452,14 +452,14 @@ export default function Facturas({ user }) {
 
       {/* Modal Emitir Factura SII */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="text-green-600" size={24} />
                 <h3 className="text-lg font-bold text-gray-900">Emitir Factura Electrónica (SII)</h3>
               </div>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
+              <button type="button" onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors">
                 ✕
               </button>
             </div>
@@ -656,14 +656,15 @@ export default function Facturas({ user }) {
 
       {/* Detail Modal */}
       {viewingFactura && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-gray-150">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in" onClick={() => setViewingFactura(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-gray-150" onClick={(e) => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <div className="flex items-center space-x-2">
                 <FileText className="text-corporativoAzul" size={24} />
                 <h3 className="text-lg font-bold text-gray-900">Detalle Documento Tributario (DTE)</h3>
               </div>
               <button 
+                type="button"
                 onClick={() => setViewingFactura(null)} 
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors"
               >

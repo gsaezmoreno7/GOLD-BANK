@@ -1,17 +1,117 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LogOut, User, Bell, Check, Menu } from 'lucide-react';
+import axios from 'axios';
 
 export default function Navbar({ user, onLogout, onToggleSidebar }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Nueva orden #1042 ingresada", time: "Hace 10 min", unread: true },
-    { id: 2, text: "Factura F-899 pagada", time: "Hace 1 hora", unread: true },
-    { id: 3, text: "Stock de repuestos bajo", time: "Hace 2 horas", unread: true },
-    { id: 4, text: "Gasto de Insumos registrado", time: "Hace 4 horas", unread: false }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+
+  const formatRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Hace unos instantes';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+    return `Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+  };
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Fetch recent data concurrently
+        const [resOrders, resFacturas, resGastos] = await Promise.allSettled([
+          axios.get('/api/ordentrabajo', { headers }),
+          axios.get('/api/factura', { headers }),
+          axios.get('/api/gasto', { headers })
+        ]);
+
+        const notifs = [];
+
+        // Process Orders
+        if (resOrders.status === 'fulfilled' && Array.isArray(resOrders.value.data)) {
+          resOrders.value.data.forEach(o => {
+            notifs.push({
+              id: `orden-${o.id_orden}`,
+              text: `Nueva orden de trabajo #${o.id_orden} (${o.tipo_maquina})`,
+              rawDate: o.fecha_ingreso || o.created_at,
+              unread: o.estado === 'INGRESADA',
+              type: 'order'
+            });
+          });
+        }
+
+        // Process Invoices
+        if (resFacturas.status === 'fulfilled' && Array.isArray(resFacturas.value.data)) {
+          resFacturas.value.data.forEach(f => {
+            notifs.push({
+              id: `factura-${f.id_factura}`,
+              text: `Factura F-${f.numero_factura} emitida por $${f.total_facturado.toLocaleString('es-CL')}`,
+              rawDate: f.fecha_emision || f.created_at,
+              unread: f.estado === 'EMITIDA',
+              type: 'invoice'
+            });
+          });
+        }
+
+        // Process Expenses
+        if (resGastos.status === 'fulfilled' && Array.isArray(resGastos.value.data)) {
+          resGastos.value.data.forEach(g => {
+            notifs.push({
+              id: `gasto-${g.id_gasto}`,
+              text: `Gasto registrado: ${g.descripcion} ($${g.monto.toLocaleString('es-CL')})`,
+              rawDate: g.fecha || g.created_at,
+              unread: false,
+              type: 'expense'
+            });
+          });
+        }
+
+        // Sort by date descending
+        notifs.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+        // Format and set top 5 notifications
+        const topNotifs = notifs.slice(0, 5).map(n => ({
+          id: n.id,
+          text: n.text,
+          time: formatRelativeTime(n.rawDate),
+          unread: n.unread
+        }));
+
+        // Fallback mock notifications if database is empty
+        if (topNotifs.length === 0) {
+          setNotifications([
+            { id: 1, text: "Nueva orden #1042 ingresada", time: "Hace 10 min", unread: true },
+            { id: 2, text: "Factura F-899 pagada", time: "Hace 1 hora", unread: true },
+            { id: 3, text: "Stock de repuestos bajo", time: "Hace 2 horas", unread: true }
+          ]);
+        } else {
+          setNotifications(topNotifs);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+
+    // Set interval to refresh relative times every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleMarkAsRead = (id) => {
     setNotifications(prev => 

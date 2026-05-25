@@ -5,6 +5,7 @@ import { Search, Download, FileText, CheckCircle, PlusCircle, Building, ShieldCh
 export default function Facturas({ user }) {
   const [facturas, setFacturas] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -30,6 +31,7 @@ export default function Facturas({ user }) {
   useEffect(() => {
     fetchFacturas();
     fetchOrdenes();
+    fetchClientes();
   }, []);
 
   const handleDrag = (e) => {
@@ -164,6 +166,46 @@ export default function Facturas({ user }) {
     };
     
     reader.readAsText(file);
+  };
+
+  const fetchClientes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/cliente', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setClientes(res.data);
+    } catch (error) {
+      console.error('Error fetching clientes:', error);
+    }
+  };
+
+  const formatRUT = (value) => {
+    let clean = value.replace(/[^0-9kK]/g, '').toUpperCase();
+    if (clean.length > 9) {
+      clean = clean.slice(0, 9);
+    }
+    if (clean.length <= 1) return clean;
+    const dv = clean.slice(-1);
+    let cuerpo = clean.slice(0, -1);
+    cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${cuerpo}-${dv}`;
+  };
+
+  const handleRutChange = (e) => {
+    const formatted = formatRUT(e.target.value);
+    setRutReceptor(formatted);
+    
+    // Try to auto-complete from existing clients
+    const cleanInput = formatted.replace(/[^0-9kK]/g, '');
+    if (cleanInput.length >= 8) {
+      const match = clientes.find(c => c.rut.replace(/[^0-9kK]/g, '') === cleanInput);
+      if (match) {
+        setRazonSocial(match.nombre || '');
+        setGiro(match.observaciones || 'Servicio Técnico / General');
+        setComuna(match.direccion || 'Los Ángeles');
+      }
+    }
   };
 
   const fetchOrdenes = async () => {
@@ -524,7 +566,19 @@ export default function Facturas({ user }) {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Orden de Trabajo (Opcional)</label>
                       <select 
                         value={selectedOrden}
-                        onChange={(e) => setSelectedOrden(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSelectedOrden(val);
+                          if (val) {
+                            const o = ordenes.find(ord => ord.id_orden === parseInt(val));
+                            if (o && o.cliente) {
+                              setRutReceptor(o.cliente.rut || '');
+                              setRazonSocial(o.cliente.nombre || '');
+                              setGiro(o.cliente.observaciones || 'Servicio Técnico / General');
+                              setComuna(o.cliente.direccion || 'Los Ángeles');
+                            }
+                          }
+                        }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoRojo outline-none"
                       >
                         <option value="">Seleccionar Orden Completada...</option>
@@ -541,7 +595,8 @@ export default function Facturas({ user }) {
                         type="text" 
                         required
                         value={rutReceptor}
-                        onChange={(e) => setRutReceptor(e.target.value)}
+                        onChange={handleRutChange}
+                        maxLength={12}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-corporativoRojo outline-none" 
                         placeholder="12.345.678-9" 
                       />

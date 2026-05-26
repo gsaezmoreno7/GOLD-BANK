@@ -495,8 +495,8 @@ export default function Facturas({ user }) {
       {/* Modal Emitir Factura SII */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in" onClick={() => setShowModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="text-green-600" size={24} />
                 <h3 className="text-lg font-bold text-gray-900">Emitir Factura Electrónica (SII)</h3>
@@ -506,59 +506,59 @@ export default function Facturas({ user }) {
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="bg-blue-50 text-blue-800 p-4 rounded-xl mb-6 text-sm border border-blue-100 flex items-start">
-                <div className="mr-3 mt-0.5">ℹ️</div>
-                <p>La emisión requiere conexión directa mediante certificado digital con el Servicio de Impuestos Internos. Actualmente el módulo mostrará la estructura de datos requerida para generar el archivo XML del DTE.</p>
-              </div>
+            <form onSubmit={handleEmitirFactura} className="flex-1 flex flex-col overflow-hidden min-h-0">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm border border-blue-100 flex items-start">
+                  <div className="mr-3 mt-0.5">ℹ️</div>
+                  <p>La emisión requiere conexión directa mediante certificado digital con el Servicio de Impuestos Internos. Actualmente el módulo mostrará la estructura de datos requerida para generar el archivo XML del DTE.</p>
+                </div>
 
-              {/* Uploader Box */}
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-4">
-                <h4 className="font-bold text-gray-800 text-sm mb-1.5 flex items-center">
-                  <Sparkles className="text-corporativoRojo mr-1.5 animate-pulse shrink-0" size={16} />
-                  Cargar Factura y Autocalcular
-                </h4>
-                <p className="text-xs text-gray-500 mb-3">
-                  Arrastra tu factura en formato **DTE XML del SII**, **PDF** o archivo de texto para autocompletar el receptor y calcular los totales automáticamente.
-                </p>
+                {/* Uploader Box */}
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                  <h4 className="font-bold text-gray-800 text-sm mb-1.5 flex items-center">
+                    <Sparkles className="text-corporativoRojo mr-1.5 animate-pulse shrink-0" size={16} />
+                    Cargar Factura y Autocalcular
+                  </h4>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Arrastra tu factura en formato **DTE XML del SII**, **PDF** o archivo de texto para autocompletar el receptor y calcular los totales automáticamente.
+                  </p>
 
-                {parsingFile ? (
-                  <div className="border border-slate-200 rounded-xl p-6 bg-white flex flex-col items-center justify-center space-y-3">
-                    <Loader2 className="text-corporativoRojo animate-spin" size={32} />
-                    <span className="text-xs font-bold text-gray-700">Analizando documento de factura... {parsingProgress}%</span>
-                    <div className="w-full max-w-xs bg-gray-150 rounded-full h-2 overflow-hidden">
-                      <div className="bg-corporativoRojo h-full transition-all duration-300" style={{ width: `${parsingProgress}%` }}></div>
+                  {parsingFile ? (
+                    <div className="border border-slate-200 rounded-xl p-6 bg-white flex flex-col items-center justify-center space-y-3">
+                      <Loader2 className="text-corporativoRojo animate-spin" size={32} />
+                      <span className="text-xs font-bold text-gray-700">Analizando documento de factura... {parsingProgress}%</span>
+                      <div className="w-full max-w-xs bg-gray-150 rounded-full h-2 overflow-hidden">
+                        <div className="bg-corporativoRojo h-full transition-all duration-300" style={{ width: `${parsingProgress}%` }}></div>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div
-                    onDragEnter={handleDrag}
-                    onDragOver={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-                      dragActive
-                        ? 'border-corporativoRojo bg-red-50/20 scale-[1.01]'
-                        : 'border-gray-300 hover:border-corporativoRojo bg-white hover:bg-slate-50/50'
-                    }`}
-                  >
-                    <input
-                      type="file"
-                      accept=".xml,.pdf,.txt"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="invoice-file-uploader"
-                    />
-                    <label htmlFor="invoice-file-uploader" className="cursor-pointer flex flex-col items-center justify-center">
-                      <Upload className="text-gray-400 mb-2 hover:text-corporativoRojo transition-colors" size={28} />
-                      <span className="text-xs font-extrabold text-gray-900">Arrastra tu archivo aquí o haz clic para examinar</span>
-                      <span className="text-[10px] text-gray-400 font-semibold mt-1">Soporta DTE XML oficial del SII, PDF e imágenes de facturas</span>
-                    </label>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div
+                      onDragEnter={handleDrag}
+                      onDragOver={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDrop={handleDrop}
+                      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                        dragActive
+                          ? 'border-corporativoRojo bg-red-50/20 scale-[1.01]'
+                          : 'border-gray-300 hover:border-corporativoRojo bg-white hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept=".xml,.pdf,.txt"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="invoice-file-uploader"
+                      />
+                      <label htmlFor="invoice-file-uploader" className="cursor-pointer flex flex-col items-center justify-center">
+                        <Upload className="text-gray-400 mb-2 hover:text-corporativoRojo transition-colors" size={28} />
+                        <span className="text-xs font-extrabold text-gray-900">Arrastra tu archivo aquí o haz clic para examinar</span>
+                        <span className="text-[10px] text-gray-400 font-semibold mt-1">Soporta DTE XML oficial del SII, PDF e imágenes de facturas</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
 
-              <form onSubmit={handleEmitirFactura}>
                 <div className="space-y-4">
                   <h4 className="font-bold text-gray-700 border-b pb-2">1. Datos del Receptor</h4>
                   <div className="grid grid-cols-2 gap-4">
@@ -687,24 +687,24 @@ export default function Facturas({ user }) {
                     <p className="text-xs text-gray-500 mt-2">* El IVA (19%) será calculado automáticamente al firmar el DTE.</p>
                   </div>
                 </div>
-                
-                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center mt-6 -mx-6 -mb-6">
-                  <div className="flex flex-col text-left">
-                    <span className="text-sm text-gray-600">Neto: <strong className="text-gray-900">${calculateTotalNeto().toLocaleString('es-CL')}</strong></span>
-                    <span className="text-sm text-gray-600">Total (IVA 19% incl.): <strong className="text-corporativoRojo">${Math.round(calculateTotalNeto() * 1.19).toLocaleString('es-CL')}</strong></span>
-                  </div>
-                  <div className="flex space-x-3">
-                    <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
-                      Cancelar
-                    </button>
-                    <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoRojo text-white font-medium rounded-lg hover:bg-red-800 transition-colors shadow-sm flex items-center disabled:opacity-75">
-                      <Building size={18} className="mr-2" />
-                      {saving ? 'Procesando...' : 'Firmar y Emitir al SII'}
-                    </button>
-                  </div>
+              </div>
+              
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
+                <div className="flex flex-col text-left">
+                  <span className="text-sm text-gray-600">Neto: <strong className="text-gray-900">${calculateTotalNeto().toLocaleString('es-CL')}</strong></span>
+                  <span className="text-sm text-gray-600">Total (IVA 19% incl.): <strong className="text-corporativoRojo">${Math.round(calculateTotalNeto() * 1.19).toLocaleString('es-CL')}</strong></span>
                 </div>
-              </form>
-            </div>
+                <div className="flex space-x-3">
+                  <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={saving} className="px-4 py-2 bg-corporativoRojo text-white font-medium rounded-lg hover:bg-red-800 transition-colors shadow-sm flex items-center disabled:opacity-75">
+                    <Building size={18} className="mr-2" />
+                    {saving ? 'Procesando...' : 'Firmar y Emitir al SII'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -712,8 +712,8 @@ export default function Facturas({ user }) {
       {/* Detail Modal */}
       {viewingFactura && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in" onClick={() => setViewingFactura(null)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden border border-gray-150" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden border border-gray-150" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
               <div className="flex items-center space-x-2">
                 <FileText className="text-corporativoAzul" size={24} />
                 <h3 className="text-lg font-bold text-gray-900">Detalle Documento Tributario (DTE)</h3>
@@ -727,7 +727,7 @@ export default function Facturas({ user }) {
               </button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-y-auto flex-1">
               {/* Header Info */}
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
@@ -795,7 +795,7 @@ export default function Facturas({ user }) {
               </div>
             </div>
             
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between space-x-3">
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between space-x-3 shrink-0">
               <span className="text-[11px] text-gray-400 flex items-center">
                 🔒 Firmado Digitalmente (SII - Certificado Activo)
               </span>
